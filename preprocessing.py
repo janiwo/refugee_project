@@ -18,7 +18,11 @@ def load_data(folder):
         sheet = pd.read_csv(file_name, sep='\t', encoding = 'utf_16')
         event_df = pd.concat([event_df,sheet],axis=0)
     #choose only relevant columns to analyze
-    #all_sheets_df = all_sheets_df[list of columns we want to keep]
+    relevant_cols = ["Date","URL","Hit Sentence","Influencer","Country","Language","Reach",
+                     "Engagement","AVE","Sentiment","Key Phrases","Keywords","Twitter Authority", 
+                     "Tweet Id","Twitter Id","Twitter Client","Twitter Screen Name","Twitter User Profile Url",
+                     "Twitter Bio","Twitter Followers","Twitter Following","Alternate Date Format","Time","State","City"]
+    event_df = event_df[relevant_cols]
     return event_df
 
 
