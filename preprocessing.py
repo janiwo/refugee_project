@@ -23,6 +23,16 @@ def load_data(folder):
                      "Tweet Id","Twitter Id","Twitter Client","Twitter Screen Name","Twitter User Profile Url",
                      "Twitter Bio","Twitter Followers","Twitter Following","Alternate Date Format","Time","State","City"]
     event_df = event_df[relevant_cols]
+    #rename columns
+    event_df.rename(columns = {'Hit Sentence': 'Tweet Raw',
+        "Alternate Date Format":"Date Short",
+        "Twitter Client":"Client",
+        "Twitter Screen Name":"Screen Name",
+        "Twitter User Profile Url":"User Profile Url",
+        "Twitter Bio":"Bio",
+        "Twitter Followers":"Followers",
+        "Twitter Following":"Following"},inplace = True)
+    
     return event_df
 
 
