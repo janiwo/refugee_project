@@ -51,7 +51,7 @@ def remove_stopwords(text, stop_words):
 
 def clean_text(text):
     #remove links
-    text = text.apply(lambda x: re.sub('[http|https]+://[\w\S(\.|:|/)]+',' ', str(x)))
+    text = text.apply(lambda x: re.sub('[http|https]+://[\w\S(\.|:|/)]+',' ', str(x))) # adapted from https://stackoverflow.com/questions/6038061/regular-expression-to-find-urls-within-a-string
     #remove the tagged account names
     text = text.apply(lambda x: re.sub('\@(.*?:)',' ', str(x)))
 
@@ -76,6 +76,7 @@ def create_feature_columns(event_df):
     event_df["Hashtags"] = event_df["Tweet Raw"].apply(lambda x: re.findall('#(\w+)',str(x)))
     event_df["Mentions"] = event_df["Tweet Raw"].apply(lambda x: re.findall('@(\w+)',str(x)))
     event_df["Linked Content"] = event_df["Tweet Raw"].apply(lambda x: re.findall('[http|https]+://[\w\S(\.|:|/)]+',str(x)))
+    #return True if the Tweet Raw text contains RT and QT
     event_df["Retweet"] = event_df["Tweet Raw"].apply(lambda x: re.search('RT',str(x))!= None)
     event_df["Quote Tweet"] = event_df["Tweet Raw"].apply(lambda x: re.search('QT',str(x)) != None)
     return event_df
