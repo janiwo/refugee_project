@@ -35,7 +35,7 @@ def load_data(folder):
         "Twitter Followers":"Followers",
         "Twitter Following":"Following"},inplace = True)
     
-    return event_df.iloc[0:1000,:]
+    return event_df#.iloc[0:1000,:]
 
 
 def lemma(text):
