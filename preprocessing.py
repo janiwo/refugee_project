@@ -68,6 +68,9 @@ def clean_text(text):
     - implement and compare with the "preprocess" package
     - feature of hashtags/mentions (number of hashtags/mentions)
     - feature length of tweets (in words and characters)
+    - how many overlapping words in train and test set
+    - remove everything that is copied in all QTs
+    
     """
     return text
 
@@ -77,8 +80,8 @@ def create_feature_columns(event_df):
     event_df["Mentions"] = event_df["Tweet Raw"].apply(lambda x: re.findall('@(\w+)',str(x)))
     event_df["Linked Content"] = event_df["Tweet Raw"].apply(lambda x: re.findall('[http|https]+://[\w\S(\.|:|/)]+',str(x)))
     #return True if the Tweet Raw text contains RT and QT
-    event_df["Retweet"] = event_df["Tweet Raw"].apply(lambda x: re.search('RT',str(x))!= None)
-    event_df["Quote Tweet"] = event_df["Tweet Raw"].apply(lambda x: re.search('QT',str(x)) != None)
+    event_df["Retweet"] = event_df["Tweet Raw"].apply(lambda x: re.search('RT',str(x))!= None) #maybe need to improve so it looks only at the start of the string
+    event_df["Quote Tweet"] = event_df["Tweet Raw"].apply(lambda x: re.search('QT',str(x)) != None) #maybe need to improve so it looks only at the start of the string
     return event_df
     """
     Include RT column (boolean)
