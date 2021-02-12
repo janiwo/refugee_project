@@ -9,33 +9,36 @@ import os
 
 
 def load_data(folder):
-    #get current directory and input the folder to analyze
-    data_url = f"CBS - Copenhagen Business School/Kick-Ass Master Thesis - General/Data/{folder}/Raw Data/"
-    directory_path = os.getcwd() + '/../../../' + data_url 
-    print(directory_path)
-    event_df = pd.DataFrame()
-    #append all csv files in the folder to each other
-    for file_name in glob.glob(directory_path + '*.csv'):
-        print('Reading file: ' + file_name)
-        sheet = pd.read_csv(file_name, sep='\t', encoding = 'utf_16')
-        event_df = pd.concat([event_df,sheet],axis=0)
-    #choose only relevant columns to analyze
-    relevant_cols = ["Date","URL","Hit Sentence","Influencer","Country","Language","Reach",
-                     "Engagement","AVE","Sentiment","Key Phrases","Keywords","Twitter Authority", 
-                     "Tweet Id","Twitter Id","Twitter Client","Twitter Screen Name","Twitter User Profile Url",
-                     "Twitter Bio","Twitter Followers","Twitter Following","Alternate Date Format","Time","State","City"]
-    event_df = event_df[relevant_cols]
-    #rename columns
-    event_df.rename(columns = {'Hit Sentence': 'Tweet Raw',
-        "Alternate Date Format":"Date Short",
-        "Twitter Client":"Client",
-        "Twitter Screen Name":"Screen Name",
-        "Twitter User Profile Url":"User Profile Url",
-        "Twitter Bio":"Bio",
-        "Twitter Followers":"Followers",
-        "Twitter Following":"Following"},inplace = True)
-    
-    return event_df#.iloc[0:1000,:]
+	print('loading files...')
+	#get current directory and input the folder to analyze
+	data_url = f"CBS - Copenhagen Business School/Kick-Ass Master Thesis - General/Data/{folder}/Raw Data/"
+	directory_path = os.getcwd() + '/../../../' + data_url 
+	print(directory_path)
+	event_df = pd.DataFrame()
+	#append all csv files in the folder to each other
+	for file_name in glob.glob(directory_path + '*.csv'):
+	    print('Reading file: ' + file_name)
+	    sheet = pd.read_csv(file_name, sep='\t', encoding = 'utf_16')
+	    event_df = pd.concat([event_df,sheet],axis=0)
+	#choose only relevant columns to analyze
+	relevant_cols = ["Date","URL","Hit Sentence","Influencer","Country","Language","Reach",
+	                 "Engagement","AVE","Sentiment","Key Phrases","Keywords","Twitter Authority", 
+	                 "Tweet Id","Twitter Id","Twitter Client","Twitter Screen Name","Twitter User Profile Url",
+	                 "Twitter Bio","Twitter Followers","Twitter Following","Alternate Date Format","Time","State","City"]
+	event_df = event_df[relevant_cols]
+	#rename columns
+	event_df.rename(columns = {'Hit Sentence': 'Tweet Raw',
+	    "Alternate Date Format":"Date Short",
+	    "Twitter Client":"Client",
+	    "Twitter Screen Name":"Screen Name",
+	    "Twitter User Profile Url":"User Profile Url",
+	    "Twitter Bio":"Bio",
+	    "Twitter Followers":"Followers",
+	    "Twitter Following":"Following"},inplace = True)
+
+	print('loaded ', event_df.shape[0], ' tweets.')
+
+	return event_df#.iloc[0:1000,:]
 
 
 def lemma(text):
@@ -89,13 +92,11 @@ def create_feature_columns(event_df):
     """
 
 
-def get_processed_data(folder):
-    print('loading files...')
-    event_df = load_data(folder)
-    print('loaded ', event_df.shape[0], ' tweets.')
+def get_processed_data(event_df):
+
     print('preprocess tweets...')
     #select only the ones that have reached audience higher than x 
-    event_df = event_df[event_df['Reach'] > 0]
+    #event_df = event_df[event_df['Reach'] > 0]
 
     event_df = create_feature_columns(event_df)
 
