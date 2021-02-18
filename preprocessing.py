@@ -6,6 +6,7 @@ from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
 import glob
 import os 
+import preprocessor as p
 
 
 def load_data(folder):
@@ -100,7 +101,7 @@ def get_processed_data(event_df):
 
     event_df = create_feature_columns(event_df)
 
-    event_df['Tweet Clean'] = clean_text(event_df["Tweet Raw"])
+    event_df['Tweet Clean'] = event_df["Tweet Raw"].apply(lambda x: p.clean(x).lower())  
 
     event_df["Tweet Clean Tokens"] = tokenize(event_df["Tweet Clean"])
     event_df["Tweet Clean Tokens"] = event_df["Tweet Clean Tokens"].apply(lemma)
