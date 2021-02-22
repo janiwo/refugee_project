@@ -108,7 +108,7 @@ def get_processed_data(event_df):
 
     print('removing unwanted words...')
     stop_words = stopwords.words('english')
-    extra_stopwords = ['twitter','http','https'] 
+    extra_stopwords = ['twitter','http','https','daniel','trilling'] 
     stop_words = list(stop_words) + extra_stopwords
     event_df["Tweet Clean Tokens"] = event_df["Tweet Clean Tokens"].apply(lambda x: remove_stopwords(x, stop_words))
 
