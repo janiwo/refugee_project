@@ -1,0 +1,38 @@
+
+*.props
+*.jar
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/build.xml
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/CoreNLP-to-HTML.xsl
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/corenlp.sh
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/corenlp.zip
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/input.txt
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/input.txt.out
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/input.txt.xml
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/LIBRARY-LICENSES
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/LICENSE.txt
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/Makefile
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/patterns/example.properties
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/patterns/goldnames.txt
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/patterns/goldplaces.txt
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/patterns/names.txt
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/patterns/otherpeople.txt
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/patterns/places.txt
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/patterns/presidents.txt
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/patterns/stopwords.txt
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/pom-java-11.xml
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/pom.xml
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/README.txt
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/RESOURCE-LICENSES
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/SemgrexDemo.java
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/ShiftReduceDemo.java
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/StanfordCoreNlpDemo.java
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/StanfordDependenciesManual.pdf
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/sutime/british.sutime.txt
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/sutime/english.holidays.sutime.txt
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/sutime/defs.sutime.txt
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/sutime/english.sutime.txt
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/tokensregex/color.input.txt
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/sutime/spanish.sutime.txt
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/tokensregex/color.properties
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/tokensregex/color.rules.txt
+export CORENLP_HOME=/path/to/stanford-corenlp-4.1.0/tokensregex/retokenize.txt
