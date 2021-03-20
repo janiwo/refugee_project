@@ -103,7 +103,7 @@ def get_processed_data(event_df):
     #event_df = event_df[event_df['Reach'] > 0]
 
     event_df = create_feature_columns(event_df)
-
+    preprocessor.set_options()
     event_df['Tweet Clean'] = event_df["Tweet Raw"].apply(lambda x: preprocessor.clean(x).lower())  
 
     event_df["Tweet Clean Tokens"] = tokenize(event_df["Tweet Clean"])
@@ -180,3 +180,92 @@ def fuzzy_duplicate_removal(event_df, similarity = 0.9):
 	event_df.drop(indexes_to_remove,inplace=True)
 
 	return event_df
+
+
+
+from ekphrasis.classes.tokenizer import SocialTokenizer
+from nltk.tokenize.treebank import TreebankWordDetokenizer 
+from ekphrasis.classes.segmenter import Segmenter
+from ekphrasis.classes.spellcorrect import SpellCorrector
+
+def remove_tweet_signatures(tweet):
+    """
+    Frequently occuring text and tweet signatures should be removed
+    
+    Input: full tweet text
+    Output: tweet - the strings in the list
+    """
+    texts_to_remove = ["Greece has a deadly new migration policy and all of Europe is to blame",
+                       "| The Guardian",
+                       "| Photo via Evening Standard",
+                       "| Greece",
+                       "| DW News ",
+                       "- @WashTimes",
+                       "(Guardian) Story:",
+                       "| Daniel Trilling",
+                       " | Globaldevelopment"
+                  ]
+    for text in texts_to_remove:
+        tweet = tweet.replace(text,"")
+    return tweet
+
+
+
+puncttok = nltk.WordPunctTokenizer().tokenize
+social_tokenizer = SocialTokenizer(lowercase=False).tokenize
+detokenizer = TreebankWordDetokenizer()
+
+sp = SpellCorrector(corpus="english") 
+seg_eng = Segmenter(corpus="english") 
+
+# preprocessor should remove emojis and urls in the tweets
+preprocessor.set_options(preprocessor.OPT.URL, preprocessor.OPT.EMOJI)
+
+def preprocess_tweets(tweets_df):
+
+    for twt in tqdm(range(len(tweets_df))):
+        
+        #clean emojis, links and remove common signatures occuring in tweets (as observed from longest candidates later on)
+        tweets_df.iloc[twt] = preprocessor.clean(tweets_df.iloc[twt])
+        tweets_df.iloc[twt] = remove_tweet_signatures(tweets_df.iloc[twt])
+        
+        
+        # we are using social tokenizer due to potentially improper text structure
+        #tweet = sample_df[twt].split()
+        tweet = social_tokenizer(tweets_df.iloc[twt])
+
+
+        #removing the irrelevant hashtags and mention using the heuristic that mentions in the beginning of the tweet 
+        # and at least 2 consecutive hashtags at the end of the tweet carry no valuable information
+        try:
+            while tweet[0].startswith('@'):
+                tweet.remove(tweet[0])
+            while tweet[-1].startswith('#'):
+                hashtag_end = False
+                if tweet[-1].startswith('#') and tweet[-2].startswith('#'):
+                    hashtag_end = True
+                    tweet.remove(tweet[-1])
+                elif hashtag_end:
+                    tweet.remove(tweet[-1])
+                else:
+                    break
+                    
+        except IndexError:
+            pass
+            #sample_df.iloc[twt] = tweet
+
+
+        #for hashtags that may carry information, we remove the # and split the word into more if applicable
+        for word in range(len(tweet)):
+            if tweet[word].startswith('#'):
+                tweet[word] = tweet[word].replace('#','')
+                tweet[word] = seg_eng.segment(tweet[word])
+
+            # potentially correct spelling - but it is not working very well - corrects numbers to weird words
+            #tweet[word] = sp.correct(tweet[word])
+
+        # instead of .join we use detokenizer in order to reconstruct the cleaned sentence in a better way
+        #sample_df[twt] =  " ".join(tweet) 
+        tweets_df.iloc[twt] = detokenizer.detokenize(tweet)
+        
+    return tweets_df
