@@ -203,7 +203,9 @@ def remove_tweet_signatures(tweet):
                        "- @WashTimes",
                        "(Guardian) Story:",
                        "| Daniel Trilling",
-                       " | Globaldevelopment"
+                       " | Globaldevelopment",
+                       "| Global development: sant",
+                       "via @TheNationalUAE"
                   ]
     for text in texts_to_remove:
         tweet = tweet.replace(text,"")
@@ -267,5 +269,8 @@ def preprocess_tweets(tweets_df):
         # instead of .join we use detokenizer in order to reconstruct the cleaned sentence in a better way
         #sample_df[twt] =  " ".join(tweet) 
         tweets_df.iloc[twt] = detokenizer.detokenize(tweet)
+
+        #  tweets that end up being empty after preprocessing will cause problems when batching, replace empty tweet with 'no_tweet_text' which we can ignore later
+        tweets_df.iloc[twt] = 'no_tweet_text' if len(tweets_df.iloc[twt])==0 else tweets_df.iloc[twt]
         
     return tweets_df

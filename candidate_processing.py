@@ -58,12 +58,12 @@ def get_coref_chain(tweet,client):
 def prep_candlist_for_batching(cand_list):
     #change noun_phrase_list format to be batching compatible
     # the sampled_df series should be converted to list and sentences separated with "\n\n"
-    all_cands_list = cand_list
+    all_cands_list = cand_list.copy()
     for tweet in range(len(cand_list)):
         if cand_list[tweet] == []:
             all_cands_list[tweet].append('candidate_to_be_removed')
             print(f'empty tweet at index {tweet}')
-        all_cands_list[tweet] = "\n\n".join(cand_list[tweet])
+        all_cands_list[tweet] = r"\n\n".join(cand_list[tweet])
     return all_cands_list
 
 
@@ -71,7 +71,7 @@ def prep_candlist_for_batching(cand_list):
 def get_cand_heads(tagged_cands):
     # each candidate will be stored as [(set_of_phrases_heads), cand_rep_head] 
     return [[[set([cand.words[word.head-1].text for word in cand.words]), 
-             [word.text for word in cand.words if word.head == 0]] #the root of NP has value 0 
+             str([word.text for word in cand.words if word.head == 0])] #the root of NP has value 0 
              for cand in tweet_cands.sentences] for tweet_cands in tagged_cands]
 
 
@@ -148,7 +148,7 @@ def get_cand_type(cand_list, cand_heads, tweet_tags, cand_types_dict, corefs = F
     for tweet_index in tqdm(range(len(cand_list))):
         cand_types = [] 
         #tweet_candidates = [cand_list[tweet_index].split('\n\n')] if corefs else cand_list[tweet_index].split('\n\n')
-        tweet_candidates = cand_list[tweet_index].split('\n\n')
+        tweet_candidates = cand_list[tweet_index]#.split('\n\n')
         cand_head_type = tuple()
         for np in range(len(tweet_candidates)):
             cand_head_type = tuple() 
