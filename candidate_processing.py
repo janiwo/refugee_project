@@ -57,13 +57,12 @@ def get_coref_chain(tweet,client):
 
 def prep_candlist_for_batching(cand_list):
     #change noun_phrase_list format to be batching compatible
-    # the sampled_df series should be converted to list and sentences separated with "\n\n"
     all_cands_list = cand_list.copy()
-    for tweet in range(len(cand_list)):
-        if cand_list[tweet] == []:
-            all_cands_list[tweet].append('candidate_to_be_removed')
-            print(f'empty tweet at index {tweet}')
-        all_cands_list[tweet] = r"\n\n".join(cand_list[tweet])
+    for tweet_id in range(len(cand_list)):
+        if len(cand_list[tweet_id]) == 0:
+            cand_list[tweet_id] = ['candidate_to_be_removed']
+     
+        all_cands_list[tweet_id] = '\n\n'.join(cand_list[tweet_id])
     return all_cands_list
 
 
