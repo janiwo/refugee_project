@@ -53,10 +53,10 @@ def extract_candidates(event_df, all=True):
 	tweets_list = list(event_df)
 
 	#so we have control over whether we extract only np or coref candidates
-	nps = True if all == True or all == 'nps' else False
-	corefs = True if all == True or all == 'corefs' else False
+	#nps = True if all == True or all == 'nps' else False
+	#corefs = True if all == True or all == 'corefs' else False
 
-	with CoreNLPClient(annotators=["tokenize,ssplit,pos,lemma,parse,coref,ner,udfeats,depparse"], properties ={'coref.algorithm' : 'neural'}, timeout=300000, memory='16G') as client:
+	with CoreNLPClient(annotators=["tokenize,ssplit,pos,lemma,parse,coref,ner,depparse"], properties ={'coref.algorithm' : 'statistical'}, timeout=300000, memory='16G') as client:
 
 		# get noun phrases with tregex using get_noun_phrases function
 		print('extracting noun phrases...')
@@ -77,21 +77,17 @@ def extract_candidates(event_df, all=True):
 	return noun_phrase_list, corefs_list
 
 
-def candidate_identification(tweet_series, ner_batch_size = 4096):
+def candidate_identification(tweet_series, stanza_pipeline, batch_size):
 
 	import stanza
 	from stanza_batch import batch
 	from nltk.tokenize import sent_tokenize
 
 
-	en_nlp = stanza.Pipeline("en", ner_batch_size=ner_batch_size)
-
-
 	all_tweets_list = list(tweet_series) 
 
 	print('annotating the tweet corpus...')
-	tagged_tweets = [tweet for tweet in tqdm(batch(all_tweets_list, en_nlp, batch_size=ner_batch_size))] 
-
+	tagged_tweets = [tweet for tweet in tqdm(batch(all_tweets_list, stanza_pipeline, batch_size=batch_size))] 
 
 
 	noun_phrase_list, corefs_list = extract_candidates(tweet_series)
@@ -103,7 +99,7 @@ def candidate_identification(tweet_series, ner_batch_size = 4096):
 	#return coref_chains if corefs == True
 
 
-"""coref = (['word1','word2','word3'], 1)
+"""coref format = (['word1','word2','word3'], 1)
    
 
 #pick out only the representative mention as the candidate's rep. phrase
