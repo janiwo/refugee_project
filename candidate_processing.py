@@ -70,8 +70,8 @@ def prep_candlist_for_batching(cand_list):
 def get_cand_heads(tagged_cands):
     # each candidate will be stored as [(set_of_phrases_heads), cand_rep_head] 
     return [[set([cand.words[word.head-1].text for word in cand.words]), 
-             str([word.text for word in cand.words if word.head == 0])] #the root of NP has value 0 
-             for cand in tweet_cands.sentences]# for tweet_cands in tagged_cands]
+             [word.text for word in cand.words if word.head == 0]] #the root of NP has value 0. Since head is only one and stored in a list, we pick item [0]
+             for cand in tagged_cands.sentences]# for tweet_cands in tagged_cands]
 
 
 
@@ -263,6 +263,6 @@ def remove_child_nps(noun_phrase_list):
     print(f'Removed {initial_len-len_after_removal} child NP candidates!')
     return noun_phrase_list
 
-def remove_mention_tag(noun_phrase_list):
+def remove_char(noun_phrase_list,char):
     #removes the @ sign at the beginning of the mention
-    return [[np.replace('@','') for np in nps ] for nps in noun_phrase_list ]   
+    return [[np.replace(char,'') for np in nps ] for nps in noun_phrase_list ]   
