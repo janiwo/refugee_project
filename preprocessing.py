@@ -205,7 +205,8 @@ def remove_tweet_signatures(tweet):
                        "| Daniel Trilling",
                        " | Globaldevelopment",
                        "| Global development: sant",
-                       "via @TheNationalUAE"
+                       "via @TheNationalUAE",
+                       "Read more &gt;&gt;&gt;"
                   ]
     for text in texts_to_remove:
         tweet = tweet.replace(text,"")
