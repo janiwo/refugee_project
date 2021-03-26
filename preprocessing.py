@@ -10,6 +10,10 @@ import numpy as np
 import preprocessor
 from difflib import SequenceMatcher as sm
 from tqdm import tqdm
+from ekphrasis.classes.tokenizer import Tokenizer
+from nltk.tokenize.treebank import TreebankWordDetokenizer 
+from ekphrasis.classes.segmenter import Segmenter
+from ekphrasis.classes.spellcorrect import SpellCorrector
 
 
 def load_data(folder):
@@ -183,11 +187,6 @@ def fuzzy_duplicate_removal(event_df, similarity = 0.9):
 
 
 
-from ekphrasis.classes.tokenizer import SocialTokenizer
-from nltk.tokenize.treebank import TreebankWordDetokenizer 
-from ekphrasis.classes.segmenter import Segmenter
-from ekphrasis.classes.spellcorrect import SpellCorrector
-
 def remove_tweet_signatures(tweet):
     """
     Frequently occuring text and tweet signatures should be removed
@@ -221,7 +220,11 @@ def remove_tweet_signatures(tweet):
 
 
 #puncttok = nltk.WordPunctTokenizer().tokenize
-social_tokenizer = SocialTokenizer(lowercase=False).tokenize
+
+
+#more advanced tokenizer gives freedom to adjust the way tokens are split
+social_pipeline = ["TAG", "EMAIL", "USER", "HASHTAG", "CASHTAG", "PHONE", "PERCENT", "NUMBER","WORD"]
+tokenizer = Tokenizer(pipeline = social_pipeline, lowercase=False).tokenize
 detokenizer = TreebankWordDetokenizer()
 
 spell_cor = SpellCorrector(corpus="english") 
@@ -232,50 +235,59 @@ preprocessor.set_options(preprocessor.OPT.URL, preprocessor.OPT.EMOJI)
 
 def preprocess_tweets(tweet):
 
-    #for twt in tqdm(range(len(tweets_series))):
-        
-        #clean emojis, links and remove common signatures occuring in tweets (as observed from longest candidates later on)
-        tweet = preprocessor.clean(tweet)
-        tweet = remove_tweet_signatures(tweet)
-        
-        
-        # we are using social tokenizer due to potentially improper text structure
-        #tweet = sample_df[twt].split()
-        tweet = social_tokenizer(tweet)
+
+    #clean emojis, links and remove common signatures occuring in tweets (as observed from longest candidates later on)
+    tweet = preprocessor.clean(tweet)
+    tweet = remove_tweet_signatures(tweet)
+    
+    
+    # we are using social tokenizer due to potentially improper text structure
+    #tweet = tweet.split()
+    tweet = tokenizer(tweet)
+    
+    #removing the irrelevant hashtags and mention using the heuristic that mentions in the beginning of the tweet 
+    # and at least 2 consecutive hashtags at the end of the tweet carry no valuable information
+    try:
+        while tweet[0].startswith('@'):
+            tweet.remove(tweet[0])
+
+        if tweet[-1].startswith('@') and tweet[-2].startswith('@'):
+            while tweet[-1].startswith('@'):
+                tweet.remove(tweet[-1])
+
+        if tweet[-1].startswith('#') and tweet[-2].startswith('#'):
+            while tweet[-1].startswith('#'):
+                tweet.remove(tweet[-1])
+                
+    except IndexError:
+        pass
+        #sample_df.iloc[twt] = tweet
 
 
-        #removing the irrelevant hashtags and mention using the heuristic that mentions in the beginning of the tweet 
-        # and at least 2 consecutive hashtags at the end of the tweet carry no valuable information
-        try:
-            while tweet[0].startswith('@'):
-                tweet.remove(tweet[0])
+    #for hashtags that may carry information, we remove the # and split the word into more if applicable
+    for word in range(len(tweet)):
+        if tweet[word].startswith('#'):
+            tweet[word] = tweet[word].replace('#','')
+            tweet[word] = seg_eng.segment(tweet[word])
 
-            if tweet[-1].startswith('@') and tweet[-2].startswith('@'):
-                while tweet[-1].startswith('@'):
-                    tweet.remove(tweet[-1])
+        # potentially correct spelling - but it is not working very well - corrects numbers to weird words
+        #tweet[word] = spell_cor.correct(tweet[word])
 
-            if tweet[-1].startswith('#') and tweet[-2].startswith('#'):
-                while tweet[-1].startswith('#'):
-                    tweet.remove(tweet[-1])
-                    
-        except IndexError:
-            pass
-            #sample_df.iloc[twt] = tweet
-
-
-        #for hashtags that may carry information, we remove the # and split the word into more if applicable
-        for word in range(len(tweet)):
-            if tweet[word].startswith('#'):
-                tweet[word] = tweet[word].replace('#','')
-                tweet[word] = seg_eng.segment(tweet[word])
-
-            # potentially correct spelling - but it is not working very well - corrects numbers to weird words
-            #tweet[word] = spell_cor.correct(tweet[word])
-
-        # instead of .join we use detokenizer in order to reconstruct the cleaned sentence in a better way
-        #sample_df[twt] =  " ".join(tweet) 
-        tweet = detokenizer.detokenize(tweet)
-
-        #  tweets that end up being empty after preprocessing will cause problems when batching, replace empty tweet with 'no_tweet_text' which we can ignore later
-        tweet = 'no_tweet_text' if len(tweet)==0 else tweet
-        return tweet
+    # instead of .join we use detokenizer in order to reconstruct the cleaned sentence in a better way
+    #sample_df[twt] =  " ".join(tweet) 
+    tweet = detokenizer.detokenize(tweet)
+    
+    
+    chars_to_remove = ['\\','>','<','+','_']
+    
+    for char in chars_to_remove:
+        tweet = tweet.replace(char, " ") 
+    
+    tweet = tweet.replace('. . .','... ')    
+    tweet = tweet.replace(' . ','. ')
+    tweet = tweet.replace("' ", "'")
+    tweet = tweet.replace('&', ' and ')
+    
+    #  tweets that end up being empty after preprocessing will cause problems when batching, replace empty tweet with 'no_tweet_text' which we can ignore later
+    tweet = 'no_tweet_text' if len(tweet)==0 else tweet
+    return tweet
