@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 
 # get noun phrases with tregex
-def get_noun_phrases(client, tweet, annotators=None):
+def get_noun_phrases(tweet, client, annotators=None):
     """
     Input: client = CoreNLPClient instance
            tweet = tweet text
@@ -18,7 +18,7 @@ def get_noun_phrases(client, tweet, annotators=None):
     return [sentence[match_id]['spanString'] for sentence in matches['sentences'] for match_id in sentence]
 
 
-def get_coref_chain(tweet,client):
+def get_coref_chains(tweet,client):
 
     ann = client.annotate(tweet)        
     tweet_chains = ann.corefChain
@@ -38,8 +38,8 @@ def get_coref_chain(tweet,client):
             
         #the corefering words will be stored alongside the index of their representative in a tuple
         coref_group = (chain_words,chain.representative)
-        coref_cand = coref_group[0][coref_group[1]]
-        all_chains.append(coref_cand)
+        #coref_cand = coref_group[0][coref_group[1]]
+        all_chains.append(coref_group)
 
 
     return all_chains
@@ -49,54 +49,57 @@ def get_coref_chain(tweet,client):
 
 def extract_candidates(event_df, all=True):
 
-	corefs_list = list()
-	tweets_list = list(event_df)
+    corefs_list = list()
+    tweets_list = list(event_df)
 
-	#so we have control over whether we extract only np or coref candidates
-	#nps = True if all == True or all == 'nps' else False
-	#corefs = True if all == True or all == 'corefs' else False
+    #so we have control over whether we extract only np or coref candidates
+    #nps = True if all == True or all == 'nps' else False
+    #corefs = True if all == True or all == 'corefs' else False
 
-	with CoreNLPClient(annotators=["tokenize,ssplit,pos,lemma,parse,coref,ner,depparse"], properties ={'coref.algorithm' : 'statistical'}, timeout=300000, memory='16G') as client:
+    with CoreNLPClient(annotators=["tokenize,ssplit,pos,lemma,parse,coref,ner,depparse"], properties ={'coref.algorithm' : 'statistical'}, timeout=600000, memory='1G') as client:
 
-		# get noun phrases with tregex using get_noun_phrases function
-		print('extracting noun phrases...')
-		noun_phrase_list = [get_noun_phrases(client,tweets_list[tweet_id], annotators="tokenize,ssplit,pos,lemma,parse") for tweet_id in tqdm(range(len(tweets_list)))]
+        # get noun phrases with tregex using get_noun_phrases function
+        print('extracting noun phrases...')
+        tqdm.pandas()
+        noun_phrase_list = list(event_df.progress_apply(get_noun_phrases,args=(client,"tokenize,ssplit,pos,lemma,parse")))
+        #noun_phrase_list = [get_noun_phrases(client,tweets_list[tweet_id], annotators="tokenize,ssplit,pos,lemma,parse") for tweet_id in tqdm(range(len(tweets_list)))]
 
 
-		print('extracting coreference chains...')
-	    # get coreference chains using the .annotate method of client handled by get_coref_chain function  
+        #print('extracting coreference chains...')
+        # get coreference chains using the .annotate method of client handled by get_coref_chain function  
 
-		for tweet_id in tqdm(range(len(tweets_list))):
-			coref_chains = [chain for chain in get_coref_chain(event_df[tweet_id],client)] 
+        #corefs_list = list(event_df.progress_apply(get_coref_chains,args=(client,)))
+        #for tweet_id in tqdm(range(len(tweets_list))):
+            #coref_chains = [chain for chain in get_coref_chain(event_df[tweet_id],client)] 
 
-			
-			corefs_list.append(['no_candidate']) if len(corefs_list) == 0 else corefs_list.append(coref_chains)
-				
-	    	 
+        #corefs_list.append(['no_candidate']) if len(corefs_list) == 0 else corefs_list.append(coref_chains)
+                
+             
 
-	return noun_phrase_list, corefs_list
+    return noun_phrase_list#, corefs_list
+
 
 
 def candidate_identification(tweet_series, stanza_pipeline, batch_size):
 
-	import stanza
-	from stanza_batch import batch
-	from nltk.tokenize import sent_tokenize
+    import stanza
+    from stanza_batch import batch
+    from nltk.tokenize import sent_tokenize
 
 
-	all_tweets_list = list(tweet_series) 
+    all_tweets_list = list(tweet_series) 
 
-	print('annotating the tweet corpus...')
-	tagged_tweets = [tweet for tweet in tqdm(batch(all_tweets_list, stanza_pipeline, batch_size=batch_size))] 
-
-
-	noun_phrase_list, corefs_list = extract_candidates(tweet_series)
+    print('annotating the tweet corpus...')
+    tagged_tweets = [tweet for tweet in tqdm(batch(all_tweets_list, stanza_pipeline, batch_size=batch_size))] 
 
 
-	return noun_phrase_list, corefs_list, tagged_tweets
+    noun_phrase_list = extract_candidates(tweet_series) #, corefs_list
 
-	#return noun_phrase_list if nps == True
-	#return coref_chains if corefs == True
+
+    return noun_phrase_list,   tagged_tweets # corefs_list,
+
+    #return noun_phrase_list if nps == True
+    #return coref_chains if corefs == True
 
 
 """coref format = (['word1','word2','word3'], 1)
