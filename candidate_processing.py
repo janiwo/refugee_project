@@ -107,6 +107,12 @@ def get_synt_category(head):
                 #print(f'hypernym with place: {hyper.wup_similarity(place_ss)}')
 
                 #if the syntactic similarity to one of the categories is more than 0.7, select the category
+
+
+                #
+                #
+                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MAKE MAX FUNCTION FOR FOLLOWING SECTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                #
                 if ss.wup_similarity(person_ss) >= 0.7:
                     synt_category = 'PERSON'
                     break
