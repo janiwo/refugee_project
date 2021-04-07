@@ -89,7 +89,7 @@ def get_synt_category(head):
     synt_category = head
     try:
         while synt_category not in [None,'PERSON','LOC','ORG']:
-            # words without meaning return empty lists and cause infinite loop, we need to throw error
+            # words without meaning return empty lists and cause infinite loop, we need to raise error
             assert len(wn.synsets(synt_category))>0, f"{synt_category} has no synonyms"
             
             for ss in wn.synsets(synt_category):
@@ -108,12 +108,19 @@ def get_synt_category(head):
 
                 #if the syntactic similarity to one of the categories is more than 0.7, select the category
 
+                sim_dict = {'PERSON' : ss.wup_similarity(person_ss), 'LOC': ss.wup_similarity(place_ss), 'ORG': ss.wup_similarity(org_ss)   }
 
+                for key,value in sim_dict.items():
+                    if value == max(sim_dict.values()) and value >= 0.7:
+                        synt_category = key
+                    else:
+                        # if the synset is not similar assign the hypernym synset
+                        synt_category = hyper.lemma_names()[0]
                 #
                 #
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MAKE MAX FUNCTION FOR FOLLOWING SECTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 #
-                if ss.wup_similarity(person_ss) >= 0.7:
+                """                if ss.wup_similarity(person_ss) >= 0.7:
                     synt_category = 'PERSON'
                     break
                 #elif ss.wup_similarity(group_ss) >= 0.7:
@@ -127,7 +134,7 @@ def get_synt_category(head):
                     break
                 else:
                     # if the synset is not similar assign the hypernym synset
-                    synt_category = hyper.lemma_names()[0]
+                    synt_category = hyper.lemma_names()[0]"""
 
                 #force stop at level 5 of hypernym search
                 if counter == 5:
@@ -158,7 +165,7 @@ cand_types_dict = {(True,'PERSON',None):'person-ne',
               (False, 'LOC',None):'loc'
             }
 
-def get_cand_type(cand_list, cand_heads, tweet_tags, corefs = False):
+def get_cand_type(cand_list, cand_heads, tweet_tags):
     """
     Input: list of all noun phrases occurring in one tweet
     Output: list of pairs of np (string) and its candidate type (string) in a tuple for each np of the tweet
@@ -239,7 +246,7 @@ def remove_long_nps(noun_phrase_list):
             i = noun_phrase_list[tweet_id].index(noun_p)
             np_split = noun_p.split()
             # Hamborg removes nps longer than 19 words, identified candidates do not seem to fulfill NP role, that's why we opt for lower threshold
-            threshold = 14
+            threshold = 9
             if len(np_split) > threshold:
                 noun_phrase_list[tweet_id].remove(noun_phrase_list[tweet_id][i])
     len_after_removal = get_cand_len(noun_phrase_list)
