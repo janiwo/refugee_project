@@ -238,7 +238,7 @@ def preprocess_tweets(tweet):
 
     #clean emojis, links and remove common signatures occuring in tweets (as observed from longest candidates later on)
     tweet = preprocessor.clean(tweet)
-    tweet = remove_tweet_signatures(tweet)
+    #tweet = remove_tweet_signatures(tweet)
     
     
     # we are using social tokenizer due to potentially improper text structure
@@ -277,16 +277,6 @@ def preprocess_tweets(tweet):
     #sample_df[twt] =  " ".join(tweet) 
     tweet = detokenizer.detokenize(tweet)
     
-    
-    chars_to_remove = ['\\','>','<','+','_']
-    
-    for char in chars_to_remove:
-        tweet = tweet.replace(char, " ") 
-    
-    tweet = tweet.replace('. . .','... ')    
-    tweet = tweet.replace(' . ','. ')
-    tweet = tweet.replace("' ", "'")
-    tweet = tweet.replace('&', ' and ')
     
     #  tweets that end up being empty after preprocessing will cause problems when batching, replace empty tweet with 'no_tweet_text' which we can ignore later
     tweet = 'no_tweet_text' if len(tweet)==0 else tweet
