@@ -3,6 +3,12 @@ from scipy.spatial.distance import cosine
 import numpy as np
 from tqdm import tqdm
 
+
+def nans(shape,dtype=float):
+    nans = np.empty(shape,dtype)
+    nans.fill(np.nan)
+    return nans
+
 def merging_step1(candidate_list):
     """
     In the first merging step, we merge two candidates if the head of each of their representative phrase 
@@ -59,15 +65,17 @@ def merging_step2(candidate_list, model, what_merged2):
             low_cand_mean_vec = phrase_heads_avg_vector(low_cand[2],model)
             similarity = 1-cosine(up_cand_mean_vec,low_cand_mean_vec)
             if up_cand[3] == low_cand[3]:
-                if similarity >= 0.70:
-                    print(f'matching "{up_cand[0]}" with "{low_cand[0]}" of the same type with {similarity} sim') 
+                if similarity >= 0.75:
+                    if similarity < 0.77:
+                        print(f'matching "{up_cand[0]}" with "{low_cand[0]}" of the same type with {similarity} sim') 
                     indices_to_remove.add(low_cand_id)
                     what_merged2[up_cand[0].lower()].append(low_cand)
                         
 
             else:
                 if similarity >= 0.8:
-                    print(f'matching "{up_cand[0]}" with "{low_cand[0]}" of diff type with {similarity} sim') 
+                    if similarity < 0.81:
+                        print(f'matching "{up_cand[0]}" with "{low_cand[0]}" of diff type with {similarity} sim') 
                     indices_to_remove.add(low_cand_id)
                     what_merged2[up_cand[0].lower()].append(low_cand)
 
@@ -80,12 +88,22 @@ def phrase_heads_avg_vector(phrase_set,model):
     for phrase_head in phrase_set:    
         try:
             phrase_head_vectors.append(model.wv[phrase_head.lower()])
+        # KeyError is raised when the word is not in the vocabulary (should not happen, since the model is trained on the data)    
         except KeyError:
-            #phrase_head_vectors.append(np.NaN)
+            phrase_head_vectors.append(nans(model.wv.vector_size))
             pass
+        # we get an attribute error when we use pretrained model instead of self-trained    
+        except AttributeError:
+            try:
+                phrase_head_vectors.append(model[phrase_head.lower()])
+            # KeyError is raised when the word is not in the vocabulary (should not happen if we build our vocabulary on top of pretrained model)        
+            except KeyError:
+                phrase_head_vectors.append(nans(model.vector_size))
+                pass
+            
     #phrase_head_vectors = [model[phrase_head] for phrase_head in phrase_set]
     if len(phrase_head_vectors) != 0:
-        return np.mean(phrase_head_vectors,axis=0)
+        return np.nanmean(phrase_head_vectors,axis=0)
     else: 
         return np.NaN
 
@@ -145,23 +163,47 @@ def merging_step3(cand_df,model,what_merged3):
 
 
 def phrases_vectors(cand_phrases,model):
-    
-#for cand_phrases in phrases:
+    """
+    Try and except statements are used to handle variations between using pretrained and self-trained w2v/fasttext models during testing
+    """
+    #for cand_phrases in phrases:
     #print(cand_phrases)
     cand_phrase_vectors = []
     for phrase in cand_phrases:
         try:
+
             cand_phrase_vectors.append(model.wv[phrase.lower()])
             #print(f'for existing phrase "{phrase}" the vector is {model[phrase][0]}')
+
         except KeyError:
             phrase_words = phrase.split('_')
             #print(model[phrase_words[1]])
             try:
                 phrase_vectors = [model.wv[phrase_word.lower()] for phrase_word in phrase_words]
                 #print(f'for phrase "{phrase}" avg vector is "{sum(phrase_vectors)/len(phrase_vectors)}') 
-                cand_phrase_vectors.append(np.nanmean(phrase_vectors))
+                cand_phrase_vectors.append(np.nanmean(np.array(phrase_vectors)))
             except KeyError:
                 cand_phrase_vectors.append(np.NaN)
+            except AttributeError:
+                try:
+                    phrase_vectors = [model[phrase_word.lower()] for phrase_word in phrase_words]
+                    cand_phrase_vectors.append(np.nanmean(np.array(phrase_vectors)))
+                except KeyError:
+                    phrase_head_vectors.append(np.NaN)
+                    pass
+        except AttributeError:
+            try:
+                cand_phrase_vectors.append(model[phrase.lower()])
+            except KeyError:
+                phrase_words = phrase.split('_')
+                #print(model[phrase_words[1]])
+                try:
+                    phrase_vectors = [model[phrase_word.lower()] for phrase_word in phrase_words]
+                    #print(f'for phrase "{phrase}" avg vector is "{sum(phrase_vectors)/len(phrase_vectors)}') 
+                    cand_phrase_vectors.append(np.nanmean(np.array(phrase_vectors)))
+                except KeyError:
+                    cand_phrase_vectors.append(np.NaN)
+
     #print(len(cand_phrase_vectors))
     return cand_phrase_vectors
     
