@@ -57,22 +57,21 @@ def get_coref_chain(tweet,client):
 
 def prep_candlist_for_batching(cand_list):
     #change noun_phrase_list format to be batching compatible
-    # the sampled_df series should be converted to list and sentences separated with "\n\n"
     all_cands_list = cand_list.copy()
-    for tweet in range(len(cand_list)):
-        if cand_list[tweet] == []:
-            all_cands_list[tweet].append('candidate_to_be_removed')
-            print(f'empty tweet at index {tweet}')
-        all_cands_list[tweet] = r"\n\n".join(cand_list[tweet])
+    for tweet_id in range(len(cand_list)):
+        if len(cand_list[tweet_id]) == 0:
+            cand_list[tweet_id] = ['candidate_to_be_removed']
+     
+        all_cands_list[tweet_id] = '\n\n'.join(cand_list[tweet_id])
     return all_cands_list
 
 
 
 def get_cand_heads(tagged_cands):
     # each candidate will be stored as [(set_of_phrases_heads), cand_rep_head] 
-    return [[[set([cand.words[word.head-1].text for word in cand.words]), 
-             str([word.text for word in cand.words if word.head == 0])] #the root of NP has value 0 
-             for cand in tweet_cands.sentences] for tweet_cands in tagged_cands]
+    return [[set([cand.words[word.head-1].text for word in cand.words]), 
+             [word.text for word in cand.words if word.head == 0]] #the root of NP has value 0. Since head is only one and stored in a list, we pick item [0]
+             for cand in tagged_cands.sentences]# for tweet_cands in tagged_cands]
 
 
 
@@ -90,7 +89,7 @@ def get_synt_category(head):
     synt_category = head
     try:
         while synt_category not in [None,'PERSON','LOC','ORG']:
-            # words without meaning return empty lists and cause infinite loop, we need to throw error
+            # words without meaning return empty lists and cause infinite loop, we need to raise error
             assert len(wn.synsets(synt_category))>0, f"{synt_category} has no synonyms"
             
             for ss in wn.synsets(synt_category):
@@ -108,7 +107,20 @@ def get_synt_category(head):
                 #print(f'hypernym with place: {hyper.wup_similarity(place_ss)}')
 
                 #if the syntactic similarity to one of the categories is more than 0.7, select the category
-                if ss.wup_similarity(person_ss) >= 0.7:
+
+                sim_dict = {'PERSON' : ss.wup_similarity(person_ss), 'LOC': ss.wup_similarity(place_ss), 'ORG': ss.wup_similarity(org_ss)   }
+
+                for key,value in sim_dict.items():
+                    if value == max(sim_dict.values()) and value >= 0.7:
+                        synt_category = key
+                    else:
+                        # if the synset is not similar assign the hypernym synset
+                        synt_category = hyper.lemma_names()[0]
+                #
+                #
+                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MAKE MAX FUNCTION FOR FOLLOWING SECTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                #
+                """                if ss.wup_similarity(person_ss) >= 0.7:
                     synt_category = 'PERSON'
                     break
                 #elif ss.wup_similarity(group_ss) >= 0.7:
@@ -122,7 +134,7 @@ def get_synt_category(head):
                     break
                 else:
                     # if the synset is not similar assign the hypernym synset
-                    synt_category = hyper.lemma_names()[0]
+                    synt_category = hyper.lemma_names()[0]"""
 
                 #force stop at level 5 of hypernym search
                 if counter == 5:
@@ -137,8 +149,23 @@ def get_synt_category(head):
     
     return synt_category
 
+#dictionary to assign candidate types based on named entities and part of speech tags
+#the key tuple consists of (isNE, lexicographer type, plural)
+cand_types_dict = {(True,'PERSON',None):'person-ne',
+              (True,'NORP',None):'person-ne',
+              (True,'PERSON','plural'):'person-nes',
+              (True,'NORP','plural'):'person-nes',
+              (False,'PERSON',None):'person-nn',
+              (False,'PERSON','plural'):'person-nns',
+              (True,'ORG',None):'group-ne',
+              (True,'FAC',None):'group-ne',
+              (False,'ORG',None):'group',
+              (True,'LOC',None):'loc-ne',
+              (True,'GPE',None):'loc-ne',
+              (False, 'LOC',None):'loc'
+            }
 
-def get_cand_type(cand_list, cand_heads, tweet_tags, cand_types_dict, corefs = False):
+def get_cand_type(cand_list, cand_heads, tweet_tags):
     """
     Input: list of all noun phrases occurring in one tweet
     Output: list of pairs of np (string) and its candidate type (string) in a tuple for each np of the tweet
@@ -196,3 +223,59 @@ def get_cand_type(cand_list, cand_heads, tweet_tags, cand_types_dict, corefs = F
             cand_types.append(cand_head_type)
         cand_and_type_list.append(cand_types)
     return cand_and_type_list
+
+
+
+
+
+def get_cand_len(cand_list):
+    # calculates number of candidates in the corpus
+    sum_len = 0
+    for tweet_cands in cand_list:
+        sum_len += len(tweet_cands)
+    return sum_len
+
+
+def remove_long_nps(noun_phrase_list):
+    print(f'removing long candidates...')
+    initial_len = get_cand_len(noun_phrase_list)
+    for tweet_id in range(len(noun_phrase_list)):
+        #print(noun_phrase_list[tweet_id])
+        #reverse the list of tweets nps so we avoid moving indexes and leaving out some phrases 
+        for noun_p in reversed(noun_phrase_list[tweet_id]):
+            i = noun_phrase_list[tweet_id].index(noun_p)
+            np_split = noun_p.split()
+            # Hamborg removes nps longer than 19 words, identified candidates do not seem to fulfill NP role, that's why we opt for lower threshold
+            threshold = 9
+            if len(np_split) > threshold:
+                noun_phrase_list[tweet_id].remove(noun_phrase_list[tweet_id][i])
+    len_after_removal = get_cand_len(noun_phrase_list)
+    print(f'Removed {initial_len-len_after_removal} candidates longer than {threshold} words!')
+
+    return noun_phrase_list
+
+def remove_child_nps(noun_phrase_list):
+    print(f'removing child NP candidates...')
+    initial_len = get_cand_len(noun_phrase_list)
+    # remove the child NPs and keep only parents, run until the sum_len stops decreasing
+    after_removal_len = 0
+    while after_removal_len != get_cand_len(noun_phrase_list):
+        after_removal_len = get_cand_len(noun_phrase_list)
+        for tweet_nps in noun_phrase_list:
+            for noun_p in range(len(tweet_nps)):
+                try:
+                    #if the subsequent noun_p (child np) is contained in the current one, remove the child np
+                    if tweet_nps[noun_p].find(tweet_nps[noun_p+1]) != -1:
+                        tweet_nps.remove(tweet_nps[noun_p+1])
+                        
+                #ignore the error caused with end of the list
+                except IndexError:
+                    pass
+
+    len_after_removal = get_cand_len(noun_phrase_list)
+    print(f'Removed {initial_len-len_after_removal} child NP candidates!')
+    return noun_phrase_list
+
+def remove_char(noun_phrase_list,char):
+    #removes the @ sign at the beginning of the mention
+    return [[np.replace(char,'') for np in nps ] for nps in noun_phrase_list ]   
