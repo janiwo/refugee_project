@@ -1,0 +1,44 @@
+---
+title: "STM"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Import relevant libraries
+
+```{r }
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(tidytext)
+
+file_path = "C:/Users/jawo19ad/Dropbox (CBS)/Master thesis data/Event Dataframes/Clean"
+greece_path = paste(file_path,"/df_greece_clean_stm.csv", sep = "")
+```
+
+
+```{r}
+data_raw <- read.csv(file = greece_path, stringsAsFactors = FALSE)
+
+tidy_data <- data_raw %>%
+  mutate(line = row_number()) %>%
+  unnest_tokens(word, input = text_stm)
+
+tidy_data %>%
+  count(word, sort = TRUE)
+
+library(quanteda)
+library(stm)
+
+data_dfm <- tidy_data %>%
+    count(id, word, sort = TRUE) %>%
+    cast_dfm(id, word, n)
+
+topic_model <- stm(data_dfm, K = 6, verbose = FALSE, init.type = "Spectral")
+
+summary(topic_model)
+```
+
