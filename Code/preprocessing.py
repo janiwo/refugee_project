@@ -60,12 +60,12 @@ def fuzzy_duplicate_removal(event_df, similarity = 0.7):
     dupl_removed = event_df.copy()
     # first, remove tweets that are 100% similar (lowercased)
     print(f'Tweets at the start: {dupl_removed.shape[0]}')    
-    dupl_removed['is_dup'] = dupl_removed['event_corefs_resolved'].duplicated()
+    dupl_removed['is_dup'] = dupl_removed['text_alphanum'].duplicated()
     dupl_removed = dupl_removed[dupl_removed['is_dup']==False]
     print(f'Tweets after 100% duplicates removed: {dupl_removed.shape[0]}') 
 
     vectorizer = TfidfVectorizer(min_df=1, analyzer=ngrams)
-    tf_idf_matrix = vectorizer.fit_transform(dupl_removed['event_corefs_resolved'])
+    tf_idf_matrix = vectorizer.fit_transform(dupl_removed['text_alphanum'])
 
     print('calculating similarities across documents...')
 
