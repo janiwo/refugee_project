@@ -7,7 +7,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Import relevant libraries
+# Import relevant libraries and load the data
 
 ```{r }
 library(dplyr)
@@ -16,17 +16,18 @@ library(stringr)
 library(tidytext)
 
 file_path = "C:/Users/jawo19ad/Dropbox (CBS)/Master thesis data/Event Dataframes/Clean"
-greece_path = paste(file_path,"/df_greece_clean.csv", sep = "")
-```
+greece_path = paste(file_path,"/df_greece_clean_stm.csv", sep = "")
 
-
-```{r}
 data_raw <- read.csv(file = greece_path,
                  stringsAsFactors = FALSE)
 
 data <- data_raw %>% select(text_stm, text_coherent, date)
+```
 
-# Process Text(most already done in Python)
+# Process Text (most already done in Python) and prepare the documents
+
+```{r}
+# Process Text
 ?textProcessor
 processed = textProcessor(data$text_stm, metadata = data,
                           lowercase = FALSE,
@@ -47,32 +48,42 @@ plotRemoved(processed$documents,
 out <- prepDocuments(processed$documents,
                      processed$vocab,
                      processed$meta,
-                     lower.thresh = 2000,
+                     lower.thresh = 1000,
                      upper.thresh = 0.25*rows)
+```
 
-# Find best K (use this code to train stm for diferent K's)
+# Find optimal number of topics
+```{r}
+# Find best K (use this code to train stm for different K's)
 ?searchK
+# ngroups argument to speed up computation (at the cost of increased memory)
 storage <- searchK(documents = out$documents,
                    vocab = out$vocab,
-                   K = c(5,6,7,8,9,10),
-                   prevalence =~ date,
+                   K = c(5,6,7),
+                   #prevalence =~ date,
                    data = out$meta,
                    seed = 42)
+plot(storage)
+exclusivity(model_fit, M = 10)
+```
 
-
+# Build the model
+```{r}
 # Build the Model
 ?stm
 model_fit <- stm(documents = out$documents,
                  vocab = out$vocab,
-                 K = 8,
+                 K = 6,
                  data = out$meta,
                  prevalence =~ out$meta$date,
                  init.type = "Spectral",
                  seed = 42)
 # prevalence ~ some var
 # content ~ some var
+```
 
-
+# Select the Model
+```{r}
 # Select Model (use to find best model for a pre-defined K)
 ?selectModel
 model_select <- selectModel(documents = out$documents,
@@ -86,8 +97,10 @@ model_select <- selectModel(documents = out$documents,
 plotModels(model_select)
 
 selected_model <- model_select$runout[[choose number]]
+```
 
-
+# Explore the Model
+```{r}
 # Label Topics
 ?labelTopics
 #?sageLabes
@@ -99,41 +112,51 @@ plot.STM(x = model_fit,
          type = "labels",
          n = 15)
 
-?findThoughts #not yet sure how to make this work
+?findThoughts # shows documents that are highly associated with a topic
 findThoughts(model = model_fit,
              texts = out$meta$text_coherent)
+```
 
+# Estimate Effect between metadata and topics
+```{r}
 # Estimating metadata/topic relationship
 ?estimateEffect
 out$meta$rating <- as.factor(out$meta$date)
 prep <- estimateEffect(1:6 ~ date, model_fit, meta = out$meta, uncertainty = "None") # consider using "Global" instead of "None"
 summary(prep)
+plot(prep)
 
 ```
 
-
-
-
-
+# Visualisation of Results
 ```{r}
-data_raw <- read.csv(file = greece_path, stringsAsFactors = FALSE)
+# Plot frequency of topics
+plot(model_fit, type="summary")
 
-tidy_data <- data_raw %>%
-  mutate(line = row_number()) %>%
-  unnest_tokens(word, input = text_stm)
+# Plot wordcloud of a topic
+cloud(model_fit, topic = 1)
 
-tidy_data %>%
-  count(word, sort = TRUE)
+plot(prep, "date", method="continuous", topics = 5, model = model_fit)
 
-library(quanteda)
-library(stm)
 
-data_dfm <- tidy_data %>%
-    count(id, word, sort = TRUE) %>%
-    cast_dfm(id, word, n)
+# Plot topic correlations
+mod.out.corr <-topicCorr(model_fit)
+plot(mod.out.corr)
 
-topic_model <- stm(data_dfm, K = 6, verbose = FALSE, init.type = "Spectral")
+?toLDAvis
+toLDAvis(model_fit, docs = out$documents)
 
-summary(topic_model)
+
 ```
+
+
+
+
+
+
+
+
+
+
+
 
