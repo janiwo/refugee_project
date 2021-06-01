@@ -16,8 +16,103 @@ library(stringr)
 library(tidytext)
 
 file_path = "C:/Users/jawo19ad/Dropbox (CBS)/Master thesis data/Event Dataframes/Clean"
-greece_path = paste(file_path,"/df_greece_clean_stm.csv", sep = "")
+greece_path = paste(file_path,"/df_greece_clean.csv", sep = "")
 ```
+
+
+```{r}
+data_raw <- read.csv(file = greece_path,
+                 stringsAsFactors = FALSE)
+
+data <- data_raw %>% select(text_stm, text_coherent, date)
+
+# Process Text(most already done in Python)
+?textProcessor
+processed = textProcessor(data$text_stm, metadata = data,
+                          lowercase = FALSE,
+                          removestopwords = FALSE,
+                          removenumbers = FALSE,
+                          removepunctuation = FALSE,
+                          ucp = FALSE,
+                          stem = FALSE)
+
+# Prepare Docs
+?plotRemoved
+rows <- nrow(data)
+plotRemoved(processed$documents,
+            lower.thresh = seq(as.integer(0.001*rows),
+                               as.integer(0.05*rows)))
+
+?prepDocuments
+out <- prepDocuments(processed$documents,
+                     processed$vocab,
+                     processed$meta,
+                     lower.thresh = 2000,
+                     upper.thresh = 0.25*rows)
+
+# Find best K (use this code to train stm for diferent K's)
+?searchK
+storage <- searchK(documents = out$documents,
+                   vocab = out$vocab,
+                   K = c(5,6,7,8,9,10),
+                   prevalence =~ date,
+                   data = out$meta,
+                   seed = 42)
+
+
+# Build the Model
+?stm
+model_fit <- stm(documents = out$documents,
+                 vocab = out$vocab,
+                 K = 8,
+                 data = out$meta,
+                 prevalence =~ out$meta$date,
+                 init.type = "Spectral",
+                 seed = 42)
+# prevalence ~ some var
+# content ~ some var
+
+
+# Select Model (use to find best model for a pre-defined K)
+?selectModel
+model_select <- selectModel(documents = out$documents,
+                            vocab = out$vocab,
+                            K = 8,
+                            prevalence =~ out$meta$date,
+                            data = out$meta,
+                            runs = 20,
+                            seed = 42)
+
+plotModels(model_select)
+
+selected_model <- model_select$runout[[choose number]]
+
+
+# Label Topics
+?labelTopics
+#?sageLabes
+labelTopics(model = model_fit,
+            n = 10)
+
+?plot.STM
+plot.STM(x = model_fit,
+         type = "labels",
+         n = 15)
+
+?findThoughts #not yet sure how to make this work
+findThoughts(model = model_fit,
+             texts = out$meta$text_coherent)
+
+# Estimating metadata/topic relationship
+?estimateEffect
+out$meta$rating <- as.factor(out$meta$date)
+prep <- estimateEffect(1:6 ~ date, model_fit, meta = out$meta, uncertainty = "None") # consider using "Global" instead of "None"
+summary(prep)
+
+```
+
+
+
 
 
 ```{r}
