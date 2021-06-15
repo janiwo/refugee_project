@@ -87,7 +87,7 @@ df_rohingya <- df_rohingya_raw %>% select(text_stm, text_coherent, day, entity)
 
 ```{r}
 # Process Text
-stop_uninformative <- strsplit("according across agreement already also always another anyone around asylum back become breaking came cant case caught cause centre close come condition continue continues could created crisis day deal done dont east enough even every everyone facing first including instead give going good happening head held high huge keep know largest last least left like long longer look made make many maybe mean medium member middle month move much must near need never news next north nothing part people place please problem push reach read really remains report said say saying seeker seen send sending sent series several show side since situation south stand still sure take taken taking talk tell thats thing think time today told took towards true trying turn urgent urgently used using video vice want week well west without whats world would year yesterday"," ")[[1]]
+stop_uninformative <- strsplit("according across agreement already also always another anyone around asylum back become breaking came cant case caught cause centre close come condition continue continues could created crisis day deal done dont east enough even every everyone facing first including instead give going good happening head held high huge keep know largest last least left like long longer look made make many maybe mean medium member middle month move much must near need never news next north nothing part people place please problem push reach read really remains report said say saying seeker seen send sending sent series several show side since situation south stand still sure take taken taking talk tell thats thing think time today told took towards true trying turn urgent urgently used using video vice virus want week well west without whats world would year yesterday"," ")[[1]]
 
 stop_ne <- strsplit("abiy afghan afghanistan africa ahmed amhara andrew ankara antony asean asia assad aung balukhali bangladesh bangladeshi biden blinken borrell bulgaria burma burmese china corona coronavirus covid cox erdogan eritrea eritrean ethiopia ethiopian euro european evros filippo fontelles france freya_cole geneva german germany grandi guterres harris hindu hitsats idlib india indian iran iraq isaias isi italy jammu josep junta justin kachin karen kayin kamala lindat_g lebanon lesbos lesvos libya manipur merkel mizoram moria muslim mutraw myanmar nation nations nato pakistan president putin rohingya rohingyas russia russian secretary shimelba state sudan sudanese tigrai tigrayan tigrayans thai thailand tplf trudeau trump turk unhcr unicef union united unsc"," ")[[1]]
 
@@ -98,6 +98,7 @@ stop_cust <- c(stop_uninformative,stop_ne)
 # ------------------- Process greece data ----------------
 # --------------------------------------------------------
 ?textProcessor
+
 processed_greece = textProcessor(df_greece$text_stm, metadata = df_greece,
                                  lowercase = FALSE,
                                  removestopwords = FALSE,
@@ -190,10 +191,10 @@ out_rohingya <- prepDocuments(processed_rohingya$documents,
 # ngroups argument to speed up computation (at the cost of increased memory)
 storage_greece <- searchK(documents = out_greece$documents,
                           vocab = out_greece$vocab,
-                          K = c(4,5,6,7,8,9,10,11,12),
+                          K = c(4,6,8,10,12,15,20,25,30,40,50),
                           prevalence =~ entity + s(day),
                           data = out_greece$meta,
-                          max.em.its = 25,
+                          max.em.its = 50,
                           seed = 42)
 plot(storage_greece) # -> 7/8 seems to be good
 #exclusivity(model_fit, M = 10)
@@ -205,10 +206,10 @@ plot(storage_greece) # -> 7/8 seems to be good
 
 storage_tigray <- searchK(documents = out_tigray$documents,
                           vocab = out_tigray$vocab,
-                          K = c(4,5,6,7,8,9,10,11,12),
+                          K = c(4,6,8,10,12,15,20,25,30,40,50),
                           prevalence =~ entity + s(day),
                           data = out_tigray$meta,
-                          max.em.its = 25,
+                          max.em.its = 50,
                           seed = 42)
 plot(storage_tigray)
 
@@ -219,10 +220,10 @@ plot(storage_tigray)
 
 storage_rohingya <- searchK(documents = out_rohingya$documents,
                             vocab = out_rohingya$vocab,
-                            K = c(4,5,6,7,8,9,10,11,12),
+                            K = c(4,6,8,10,12,15,20,25,30,40,50),
                             prevalence =~ entity + s(day),
                             data = out_rohingya$meta,
-                            max.em.its = 25,
+                            max.em.its = 50,
                             seed = 42)
 plot(storage_rohingya)
 
@@ -293,6 +294,14 @@ model_greece_8 <- stm(documents = out_greece$documents,
                       data = out_greece$meta,
                       init.type = "Spectral",
                       seed = 42)
+
+model_greece_40 <- stm(documents = out_greece$documents,
+                       vocab = out_greece$vocab,
+                       K = 40,
+                       prevalence =~ entity + s(day),
+                       data = out_greece$meta,
+                       init.type = "Spectral",
+                       seed = 42)
 
 # model_greece <- stm(documents = out_greece$documents,
 #                     vocab = out_greece$vocab,
