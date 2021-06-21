@@ -17,9 +17,10 @@ library(tidytext)
 library(stm)
 library(ggplot2)
 
-file_path = "/Users/Janiwo/Desktop/Clean"
-#file_path = "C:/Users/jawo19ad/Dropbox (CBS)/Master thesis data/Event Dataframes/Clean"
+#file_path = "/Users/Janiwo/Desktop/Clean"
+file_path = "C:/Users/jawo19ad/Dropbox (CBS)/Master thesis data/Event Dataframes/Clean"
 greece_path = paste(file_path,"/df_greece_clean.csv", sep = "")
+channel_path = paste(file_path,"/df_channel_clean.csv", sep = "")
 tigray_path = paste(file_path,"/df_tigray_clean.csv", sep = "")
 rohingya_path = paste(file_path,"/df_rohingya_clean.csv", sep = "")
 
@@ -40,6 +41,26 @@ df_greece_raw <- df_greece_raw %>%
 df_greece_raw$day <- cumsum(!duplicated(df_greece_raw$date))
 
 df_greece <- df_greece_raw %>% select(text_stm, text_coherent, day, entity)
+
+
+
+# --------------------------------------------------------
+# ------------------- Load channel data -------------------
+# --------------------------------------------------------
+df_channel_raw <- read.csv(file = channel_path,
+                           stringsAsFactors = FALSE)
+
+df_channel_raw <- df_channel_raw %>%
+  mutate(entity = case_when(
+    refugee == "True" & migrant == "False" ~ "Refugee",
+    refugee == "True" & migrant == "True" ~ "Both",
+    refugee == "False" & migrant == "True" ~ "Migrant",
+    refugee == "False" & migrant == "False" ~ "None",
+  ))
+
+df_channel_raw$day <- cumsum(!duplicated(df_channel_raw$date))
+
+df_channel <- df_channel_raw %>% select(text_stm, text_coherent, day, entity)
 
 
 
@@ -87,9 +108,9 @@ df_rohingya <- df_rohingya_raw %>% select(text_stm, text_coherent, day, entity)
 
 ```{r}
 # Process Text
-stop_uninformative <- strsplit("according across agreement already also always another anyone around asylum back become breaking came cant case caught cause centre close come condition continue continues could created crisis day deal done dont east enough even every everyone facing first including instead give going good happening head held high huge keep know largest last least left like long longer look made make many maybe mean medium member middle month move much must near need never news next north nothing part people place please problem push reach read really remains report said say saying seeker seen send sending sent series several show side since situation south stand still sure take taken taking talk tell thats thing think time today told took towards true trying turn urgent urgently used using video vice virus want week well west without whats world would year yesterday"," ")[[1]]
+stop_uninformative <- strsplit("able absolutely according across actually agree agreement already also always another answer anti anyone anything area arent around asylum away back become believe best better born breaking bring call called calling came cant case caught cause centre change claim claiming clearly close come coming comment condition continue continues could country course created crisis daily day deal didnt difference different doesnt done dont east either else enough especially even ever every everyone everything exactly face facing fact failed feel find first found free fuck fucking full genuine getting given giving great including instead isnt give going good hand happen happening hard head held high however huge idea keep know largest last least left let like little live living long longer look looking lost made mail majority make making many matter maybe mean medium member middle might migration month move much must name near need never news next north nothing office one others part party people perhaps place plan please point post probably problem process push putting question quite rather reach read real really reason record remains remember report said say saying seek seeker seeking seem seems seen send sending sent series several shit show side since situation small someone something soon sorry sort south speak stand star start still stop stopped stopping story sure surely system take taken taking talk talking tell thats there theyre thing think though thought time today told took torn towards true trying turn tweet understand unless urgent urgently used using video vice view virus want wanted watch water week well west without whats whilst white whole wonder wont word world worse wrong would year yesterday young youre"," ")[[1]]
 
-stop_ne <- strsplit("abiy afghan afghanistan africa ahmed amhara andrew ankara antony asean asia assad aung balukhali bangladesh bangladeshi biden blinken borrell bulgaria burma burmese china corona coronavirus covid cox erdogan eritrea eritrean ethiopia ethiopian euro european evros filippo fontelles france freya_cole geneva german germany grandi guterres harris hindu hitsats idlib india indian iran iraq isaias isi italy jammu josep junta justin kachin karen kayin kamala lindat_g lebanon lesbos lesvos libya manipur merkel mizoram moria muslim mutraw myanmar nation nations nato pakistan president putin rohingya rohingyas russia russian secretary shimelba state sudan sudanese tigrai tigrayan tigrayans thai thailand tplf trudeau trump turk unhcr unicef union united unsc"," ")[[1]]
+stop_ne <- strsplit("abiy afghan afghanistan africa african ahmed amhara andrew ankara antony asean asia assad aung balukhali bangladesh bangladeshi biden blinken boris borisjohnson borrell brexit brit britain british bulgaria burma burmese calais channel china corona coronavirus covid cox dover dublin england english erdogan eritrea eritrean ethiopia ethiopian euro europe european evros farage filippo fontelles france french freya_cole geneva german germany grandi greece guterres harris hindu hitsats idlib india indian iran iraq isaias isi italy jammu jerry johnson josep junta justin kachin karen kayin kamala kent labour lindat_g lebanon lesbos lesvos libya london manipur merkel mizoram moria muslim mutraw myanmar nation nations nato nigel pakistan patel president priti putin rohingya rohingyas russia russian secretary shimelba spain state sudan sudanese syria syrian tigrai tigrayan tigrayans thai thailand tory tplf trudeau trump turk turkey unhcr unicef union united unsc"," ")[[1]]
 
 stop_cust <- c(stop_uninformative,stop_ne)
 
@@ -121,6 +142,31 @@ out_greece <- prepDocuments(processed_greece$documents,
                             processed_greece$meta,
                             lower.thresh = 1000,
                             upper.thresh = 0.5*rows)
+
+
+# --------------------------------------------------------
+# ------------------- Process channel data ----------------
+# --------------------------------------------------------
+processed_channel = textProcessor(df_channel$text_stm, metadata = df_channel,
+                                  lowercase = FALSE,
+                                  removestopwords = FALSE,
+                                  removenumbers = FALSE,
+                                  removepunctuation = FALSE,
+                                  ucp = FALSE,
+                                  stem = FALSE,
+                                  customstopwords = stop_cust)
+
+# Prepare Docs
+rows <- nrow(df_channel)
+plotRemoved(processed_channel$documents,
+            lower.thresh = seq(as.integer(0.001*rows),
+                               as.integer(0.05*rows)))
+
+out_channel <- prepDocuments(processed_channel$documents,
+                             processed_channel$vocab,
+                             processed_channel$meta,
+                             lower.thresh = 1000,
+                             upper.thresh = 0.5*rows)
 
 
 # --------------------------------------------------------
@@ -201,9 +247,23 @@ plot(storage_greece) # -> 7/8 seems to be good
 
 
 # --------------------------------------------------------
+# ------------------- Find k for channel ------------------
+# --------------------------------------------------------
+# Find best K (use this code to train stm for different K's)
+storage_channel <- searchK(documents = out_channel$documents,
+                          vocab = out_channel$vocab,
+                          K = c(4,6,8,10,12,15,20,25,30,40,50),
+                          prevalence =~ entity + s(day),
+                          data = out_channel$meta,
+                          max.em.its = 50,
+                          seed = 42)
+plot(storage_channel) # -> 7/8 seems to be good
+#exclusivity(model_fit, M = 10)
+
+
+# --------------------------------------------------------
 # ------------------- Find k for tigray ------------------
 # --------------------------------------------------------
-
 storage_tigray <- searchK(documents = out_tigray$documents,
                           vocab = out_tigray$vocab,
                           K = c(4,6,8,10,12,15,20,25,30,40,50),
@@ -217,7 +277,6 @@ plot(storage_tigray)
 # --------------------------------------------------------
 # ------------------- Find k for rohingya ----------------
 # --------------------------------------------------------
-
 storage_rohingya <- searchK(documents = out_rohingya$documents,
                             vocab = out_rohingya$vocab,
                             K = c(4,6,8,10,12,15,20,25,30,40,50),
@@ -405,6 +464,131 @@ weekseq <- seq(from = as.Date("2020-02-11"),
 weeknames <- strftime(weekseq, format = "%V")
 axis(1,at = as.numeric(weekseq) - min(as.numeric(weekseq)), labels = weeknames)
 ```
+
+
+# --------------------------------------------------------
+# ------------------- CHANNEL -----------------------------
+# --------------------------------------------------------
+
+# Model Creation
+```{r}
+# --------------------------------------------------------
+# ------------------- Build model for channel -------------
+# --------------------------------------------------------
+# Build candidate models
+model_channel_6 <- stm(documents = out_channel$documents,
+                       vocab = out_channel$vocab,
+                       K = 6,
+                       prevalence =~ entity + s(day),
+                       data = out_channel$meta,
+                       init.type = "Spectral",
+                       seed = 42)
+
+model_channel_7 <- stm(documents = out_channel$documents,
+                       vocab = out_channel$vocab,
+                       K = 7,
+                       prevalence =~ entity + s(day),
+                       data = out_channel$meta,
+                       init.type = "Spectral",
+                       seed = 42)
+
+model_channel_8 <- stm(documents = out_channel$documents,
+                       vocab = out_channel$vocab,
+                       K = 8,
+                       prevalence =~ entity + s(day),
+                       data = out_channel$meta,
+                       init.type = "Spectral",
+                       seed = 42)
+
+
+# Choose the model to investiate
+
+model_channel <- model_channel_6
+
+# Plot the convergence
+plot(model_channel$convergence$bound,
+     type = "l",
+     ylab = "Approximate Convergence",
+     main = "Convergence")
+```
+
+# Model Exploration
+```{r}
+# Label Topics
+?labelTopics
+labelTopics(model = model_channel,
+            n = 10)
+
+# Plot frequency of topics
+plot(model_channel, type="summary")
+
+# Plot topic correlations
+mod.out.corr <-topicCorr(model_channel)
+plot(mod.out.corr)
+
+toLDAvis(model_channel, docs = out_channel$documents)
+
+# # Plot the model
+# ?plot.STM
+# plot.STM(x = model_channel,
+#          type = "labels",
+#          n = 10)
+
+# # Find thougths
+# ?findThoughts # shows documents that are highly associated with a topic
+# findThoughts(model = model_channel,
+#              texts = out_channel$meta$text_coherent)
+
+
+# # Plot expected distribution of topic proportions
+# plot(model_channel, type="hist")
+# 
+# # Plot wordcloud of a topic
+# cloud(model_channel, topic = 1)
+# 
+# plot(prep_channel, "date", method="continuous", topics = 5, model = model_channel)
+
+
+
+```
+
+
+
+# Effect of Covariates
+```{r}
+## Estimating metadata/topic relationship
+?estimateEffect
+
+out_channel$meta$entity <- as.factor(out_channel$meta$entity)
+prep_tigray <- estimateEffect(1:6 ~ entity + s(day), model_channel, meta = out_channel$meta, uncertainty = "None") # consider using "Global" instead of "None"
+summary(prep_channel)
+plot(prep_channel, covariate = "entity", topics = c(1,2,3,4,5,6),
+     model = model_channel, method = "difference",
+     cov.value1 = "Refugee", cov.value2 = "Migrant",
+     xlab = "Refugee ... Migrant",
+     main = "Effect of tweets containing refugee vs migrants",
+     xlim = c(-0.1, 0.1),
+     labeltype = "custom",
+     custom.labels = c("Topic1","Topic2","Topic3","Topic4","Topic5","Topic6"))
+
+# Compare content covariates
+plot(model_channel, type = "perspectives", topics = 7, covarlevels = c("Refugee","Migrant"))
+
+# Compare Frames
+plot(model_channel, type = "perspectives", topics = c(1,6))
+
+# Plot topics over time
+plot(prep_channel, "day", method = "continuous", topics = c(1,2,3,4,5,6,7), model = model_channel,
+     printlegend = FALSE, xaxt ="n", xlab = "Calendar Week")
+weekseq <- seq(from = as.Date("2020-02-11"),
+               to = as.Date("2020-03-23"),
+               by = "week")
+weeknames <- strftime(weekseq, format = "%V")
+axis(1,at = as.numeric(weekseq) - min(as.numeric(weekseq)), labels = weeknames)
+```
+
+
+
 
 
 # --------------------------------------------------------
