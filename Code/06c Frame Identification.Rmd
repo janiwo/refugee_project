@@ -108,9 +108,11 @@ df_rohingya <- df_rohingya_raw %>% select(text_stm, text_coherent, day, entity)
 
 ```{r}
 # Process Text
-stop_uninformative <- strsplit("able absolutely according across actually agree agreement almost along already also always amid among another answer anti anymore anyone anything area arent around asylum attempt away back become believe best better born breaking bring call called calling came cant case caught cause centre change claim claiming clear clearly close come coming comment condition continue continues could country course created crisis currently daily day deal decision didnt difference different doesnt done dont east either else enough especially even ever every everyone everything exactly face facing fact failed feel find first found forget free fuck fucking full genuine getting given giving great including instead isnt give going good half hand happen happening hard head heading held high however huge idea keep know largest last least left let like little live living long longer look looking lost made mail majority make making many matter maybe mean medium member middle might migration month move much must name near need never news next north nothing office one others part party people perhaps place plan please point post probably problem process push putting question quite rather reach read real really reason record remains remember report said say saying seek seeker seeking seem seems seen send sending sent series several shit show side since situation small someone something soon sorry sort south speak stand star start still stop stopped stopping story sure surely system take taken taking talk talking tell thats there theyre thing think though thought time today told took torn towards true trying turn tweet understand unless urgent urgently used using video vice view virus want wanted watch water week well west without whats whilst white whole wonder wont word world worse wrong would year yesterday young youre"," ")[[1]]
+stop_uninformative <- strsplit("able absolutely according across action actually agree agreement allow allowed allowing almost along already also always amid among another answer anti anymore anyone anything area arent around article asylum attempt away back become believe best better born breaking bring call called calling came cant case caught cause centre change claim claiming clear clearly close come coming comment condition continue continues could country course created crisis currently daily day deal decision didnt difference different doesnt done dont east easy either else enough especially even ever every everyone everything exactly expect face facing fact failed feel find first found forget free fuck fucking full genuine getting given giving great group happy imagine including issue instead isnt give going good half hand happen happening hard head heading held high hour however huge idea keep kind know lack land landing largest last latest least left let letting level like likely little live living load local long longer look looking lost made mail majority make making many matter maybe mean medium member middle might migration mind month morning mostly move much must name near nearly need never news next nobody north northern nothing obviously office one others paid part party pas past people perhaps person place plan please point post probably problem process provide public push putting question quite rather reach read real realise reality really reason record remains remember report rest result right said say saying second seek seeker seeking seem seems seen send sending sent series service several shame share shit show side simple simply since single situation small someone something soon sorry sort south source speak spread stand star start started street still stop stopped stopping story stupid sure surely system take taken taking talk talking tell term thank thanks thats there theyre thing think though thought time today told took torn towards tried true trying turn tweet understand unless urgent urgently used using video vice view virus wait waiting want wanted watch water week welcome well west without whats whilst white whole wing wish wonder wont word world worse wrong would year yesterday young youre"," ")[[1]]
 
-stop_ne <- strsplit("abiy aegean afghan afghanistan africa african america ahmed amhara andrew ankara antony arab asean asia assad aung balukhali bangladesh bangladeshi biden blinken boris borisjohnson borrell brexit brit britain british brussels bulgaria burma burmese calais channel china corona coronavirus covid cox dover dublin edirne england english erdoan erdogan eritrea eritrean ethiopia ethiopian euro europe european evros farage filippo fontelles france french freya_cole geneva german germany grandi greece greek guterres harris hindu hitsats idlib india indian iran iraq isaias isi italy jammu jerry johnson josep junta justin kachin karen kayin kamala kent labour lindat_g lebanon lesbos lesvos libya london manipur merkel mizoram moria muslim mutraw myanmar nation nations nato nigel pakistan patel president priti putin rohingya rohingyas russia russian secretary shimelba spain state sudan sudanese syria syrian tigrai tigrayan tigrayans thai thailand tory tplf trudeau trump turk turkey unhcr unicef union united unsc"," ")[[1]]
+stop_ne <- strsplit("abiy aegean afghan afghanistan africa african america ahmed american amhara andrew ankara antony arab asean asia assad aung balukhali bangladesh bangladeshi biden blinken boris borisjohnson borrell brexit brit britain british brussels bulgaria burma burmese calais channel china corona coronavirus covid cox dover dublin edirne england english erdoan erdogan eritrea eritrean ethiopia ethiopian euro europe european evros farage filippo fontelles france french freya_cole geneva german germany grandi greece greek guterres harris hindu hitsats idlib india indian iran iraq isaias isi italy jammu jerry johnson josep junta justin kachin karen kayin kamala kent kurd labour lindat_g lebanon lesbos lesvos libya london manipur merkel mizoram moria muslim mutraw myanmar nation nations nato nazi nigel pakistan patel president priti putin reuters rohingya rohingyas russia russian secretary shimelba spain state sudan sudanese syria syrian tigrai tigrayan tigrayans thai thailand tory tplf trudeau trump turk turkey turkish unhcr unicef union united unsc youtube"," ")[[1]]
+
+stop_model_opt <- strsplit(""," ")[[1]]
 
 stop_cust <- c(stop_uninformative,stop_ne)
 
@@ -336,6 +338,7 @@ model_greece_6 <- stm(documents = out_greece$documents,
                       prevalence =~ entity + s(day),
                       data = out_greece$meta,
                       init.type = "Spectral",
+                      max.em.its = 15,
                       seed = 42)
 
 model_greece_7 <- stm(documents = out_greece$documents,
@@ -344,6 +347,7 @@ model_greece_7 <- stm(documents = out_greece$documents,
                       prevalence =~ entity + s(day),
                       data = out_greece$meta,
                       init.type = "Spectral",
+                      max.em.its = 15,
                       seed = 42)
 
 model_greece_8 <- stm(documents = out_greece$documents,
@@ -352,6 +356,7 @@ model_greece_8 <- stm(documents = out_greece$documents,
                       prevalence =~ entity + s(day),
                       data = out_greece$meta,
                       init.type = "Spectral",
+                      max.em.its = 15,
                       seed = 42)
 
 model_greece_40 <- stm(documents = out_greece$documents,
@@ -374,7 +379,7 @@ model_greece_40 <- stm(documents = out_greece$documents,
 
 # Choose the model to investiate
 
-model_greece <- model_greece_6
+model_greece <- model_greece_8
 
 # Plot the convergence
 plot(model_greece$convergence$bound,
