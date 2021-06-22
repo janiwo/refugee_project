@@ -108,13 +108,13 @@ df_rohingya <- df_rohingya_raw %>% select(text_stm, text_coherent, day, entity)
 
 ```{r}
 # Process Text
-stop_uninformative <- strsplit("able absolutely according across action actually agree agreement allow allowed allowing almost along already also always amid among another answer anti anymore anyone anything area arent around article asylum attempt away back become believe best better born breaking bring call called calling came cant case caught cause centre change claim claiming clear clearly close come coming comment condition continue continues could country course created crisis currently daily day deal decision didnt difference different doesnt done dont east easy either else enough especially even ever every everyone everything exactly expect face facing fact failed feel find first found forget free fuck fucking full genuine getting given giving great group happy imagine including issue instead isnt give going good half hand happen happening hard head heading held high hour however huge idea keep kind know lack land landing largest last latest least left let letting level like likely little live living load local long longer look looking lost made mail majority make making many matter maybe mean medium member middle might migration mind month morning mostly move much must name near nearly need never news next nobody north northern nothing obviously office one others paid part party pas past people perhaps person place plan please point post probably problem process provide public push putting question quite rather reach read real realise reality really reason record remains remember report rest result right said say saying second seek seeker seeking seem seems seen send sending sent series service several shame share shit show side simple simply since single situation small someone something soon sorry sort south source speak spread stand star start started street still stop stopped stopping story stupid sure surely system take taken taking talk talking tell term thank thanks thats there theyre thing think though thought time today told took torn towards tried true trying turn tweet understand unless urgent urgently used using video vice view virus wait waiting want wanted watch water week welcome well west without whats whilst white whole wing wish wonder wont word world worse wrong would year yesterday young youre"," ")[[1]]
+stop_uninformative <- strsplit("able absolutely access according account accountable across action actually affected agency agree agreement alive allegation allow allowed allowing almost alone along already also always ambassador amid among another answer anti anymore anyone anything area arent around arrived article asylum attempt attention away back based basic become believe best better black blame blocked born breaking bring brother call called calling came cant case caught cause centre change claim claiming clear clearly close come coming comment commited commiting completely concern concerned condemn condition confirmed  continue continues could country course cover created credible crisis currently daily day deal dear decade decision demand department despite didnt difference different dire doesnt done dont east eastern easy either effort else endf enough especially ethnic even ever every everyone everything evidence evil exactly expect extremely face facility facing fact failed fake false federal feel find first found four forget free fuck fucking full genuine getting given giving great ground group happy imagine including issue instead isnt give going good half hand happen happened happening hard head heading held high horn hour however huge idea image immediate immediately independent information inside internal internally interview investigate investigation issue join journalist keep kind know known lack land landing largest last latest leader least left let letting level lie like likely little live living load local long longer look looking lost made mail major majority make making many massive matter maybe mean medium member middle might migration mind month morning mostly move much must name near nearly need needed neighboring never news next nobody north northern nothing obviously office one ongoing operation others paid part party pas past people perhaps person place plan please point post press prevails prime probably problem process programme provide public push putting question quite rather reach read real realise reality really reason received recent record remains remember report reported reporting resident response responsible rest result right said satellite say saying second seek seeker seeking seem seems seen send sending sent series service several shame share shit show side simple simply since single site situation small someone something soon sorry sort south source speak special spread stand star start started statement street still stop stopped stopping story stupid sure surely system take taken taking talk talking tell term testimony thank thanks thats there theyre thing think though thought three time today told took torn towards town tried true truth trying turn tweet understand unless urgent urgently used using video vice view virus visit voice wait waiting want wanted watch water week welcome well west western withdraw within without whats whilst white whole wing wish wonder wont word world worse wrong would year yesterday young youre"," ")[[1]]
 
-stop_ne <- strsplit("abiy aegean afghan afghanistan africa african america ahmed american amhara andrew ankara antony arab asean asia assad aung balukhali bangladesh bangladeshi biden blinken boris borisjohnson borrell brexit brit britain british brussels bulgaria burma burmese calais channel china corona coronavirus covid cox dover dublin edirne england english erdoan erdogan eritrea eritrean ethiopia ethiopian euro europe european evros farage filippo fontelles france french freya_cole geneva german germany grandi greece greek guterres harris hindu hitsats idlib india indian iran iraq isaias isi italy jammu jerry johnson josep junta justin kachin karen kayin kamala kent kurd labour lindat_g lebanon lesbos lesvos libya london manipur merkel mizoram moria muslim mutraw myanmar nation nations nato nazi nigel pakistan patel president priti putin reuters rohingya rohingyas russia russian secretary shimelba spain state sudan sudanese syria syrian tigrai tigrayan tigrayans thai thailand tory tplf trudeau trump turk turkey turkish unhcr unicef union united unsc youtube"," ")[[1]]
+stop_ne <- strsplit("abiy addis aegean afewerki afeworki afghan afghanistan africa african america amnesty ahmed american amhara andrew ankara antony arab asean asia assad aung bachelet balukhali bangladesh bangladeshi biden blinken boris borisjohnson borrell brexit brit britain british brussels bulgaria burma burmese calais canada channel china commission commissioner corona coronavirus council covid cox dover dublin edirne england english erdoan erdogan eritrea eritrean ethiopia ethiopian euro europe european evros farage filippo fontelles france french freya_cole garneau geneva german germany grandi greece greek guterres haavisto hamdayet harris hindu hitsats houthi houthis idlib idp india indian iran iraq isaias isayas isi israel italy jammu jazeera jerry johnson josep junta justin kachin kadra karen kayin kamala kent kenya kurd labour linda lindat_g lebanon lesbos lesvos libya london maikadra manipur marc merkel michelle mizoram moria muslim mutraw myanmar nation nations nationshumanrights nato nazi nigel november oromia oromo pakistan patel president priti putin reuters rohingya rohingyas russia russian samri secretary shimelba shire somalia spain state sudan sudanese syria syrian tegaru tigrai tigrayan tigrayans thai thailand tory tplf trudeau trump turk turkey turkish unhcr unicef union united unsc yemen youtube"," ")[[1]]
 
-stop_model_opt <- strsplit(""," ")[[1]]
+stop_model_opt <- strsplit("allow blame center create desparate eastern enter immigration international fake fascist home island journalist leave life live love open opened opened photo political poor propaganda racist safe save stay tear western"," ")[[1]]
 
-stop_cust <- c(stop_uninformative,stop_ne)
+stop_cust <- c(stop_uninformative,stop_ne,stop_model_opt)
 
 
 # --------------------------------------------------------
@@ -239,10 +239,10 @@ out_rohingya <- prepDocuments(processed_rohingya$documents,
 # ngroups argument to speed up computation (at the cost of increased memory)
 storage_greece <- searchK(documents = out_greece$documents,
                           vocab = out_greece$vocab,
-                          K = c(4,6,8,10,12,15,20,25,30,40,50),
+                          K = c(3,4,5,6,8,10,12,15,20,25,30,40,50,75,100),
                           prevalence =~ entity + s(day),
                           data = out_greece$meta,
-                          max.em.its = 50,
+                          max.em.its = 25,
                           seed = 42)
 plot(storage_greece) # -> 7/8 seems to be good
 #exclusivity(model_fit, M = 10)
@@ -254,10 +254,10 @@ plot(storage_greece) # -> 7/8 seems to be good
 # Find best K (use this code to train stm for different K's)
 storage_channel <- searchK(documents = out_channel$documents,
                           vocab = out_channel$vocab,
-                          K = c(4,6,8,10,12,15,20,25,30,40,50),
+                          K = c(3,4,5,6,8,10,12,15,20,25,30,40,50,75,100),
                           prevalence =~ entity + s(day),
                           data = out_channel$meta,
-                          max.em.its = 50,
+                          max.em.its = 25,
                           seed = 42)
 plot(storage_channel) # -> 7/8 seems to be good
 #exclusivity(model_fit, M = 10)
@@ -268,10 +268,10 @@ plot(storage_channel) # -> 7/8 seems to be good
 # --------------------------------------------------------
 storage_tigray <- searchK(documents = out_tigray$documents,
                           vocab = out_tigray$vocab,
-                          K = c(4,6,8,10,12,15,20,25,30,40,50),
+                          K = c(3,4,5,6,8,10,12,15,20,25,30,40,50,75,100),
                           prevalence =~ entity + s(day),
                           data = out_tigray$meta,
-                          max.em.its = 50,
+                          max.em.its = 25,
                           seed = 42)
 plot(storage_tigray)
 
@@ -281,16 +281,16 @@ plot(storage_tigray)
 # --------------------------------------------------------
 storage_rohingya <- searchK(documents = out_rohingya$documents,
                             vocab = out_rohingya$vocab,
-                            K = c(4,6,8,10,12,15,20,25,30,40,50),
+                            K = c(3,4,5,6,8,10,12,15,20,25,30,40,50,75,100),
                             prevalence =~ entity + s(day),
                             data = out_rohingya$meta,
-                            max.em.its = 50,
+                            max.em.its = 25,
                             seed = 42)
 plot(storage_rohingya)
 
 
 # exclusivity -> 
-# semantic coherence -> co-occurance of words that are most probabale under a topic in the same document (should be high)
+# semantic coherence -> co-occurance of words that are most probable under a topic in the same document (should be high)
 # held-out likelihood -> hold out fraction of words in set of documents, train the model and use the document-level latent variables to evaulate propability of heldout portion (eval.heldout, should be high)
 # resilduals -> should be around 1, if it's above, topic number is probabaly too low
 
@@ -379,7 +379,7 @@ model_greece_40 <- stm(documents = out_greece$documents,
 
 # Choose the model to investiate
 
-model_greece <- model_greece_8
+model_greece <- model_greece_7
 
 # Plot the convergence
 plot(model_greece$convergence$bound,
@@ -402,7 +402,7 @@ labelTopics(model = model_greece,
             n = 10)
 
 # Plot frequency of topics
-plot(model_greece, type="summary")
+plot(model_greece, type="summary", label="frex")
 
 # Plot topic correlations
 mod.out.corr <-topicCorr(model_greece)
@@ -634,7 +634,7 @@ model_tigray_8 <- stm(documents = out_tigray$documents,
 
 # Choose the model to investiate
 
-model_tigray <- model_tigray_8
+model_tigray <- model_tigray_6
 
 # Plot the convergence
 plot(model_tigray$convergence$bound,
