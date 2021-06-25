@@ -108,11 +108,11 @@ df_rohingya <- df_rohingya_raw %>% select(text_stm, text_coherent, day, entity)
 
 ```{r}
 # Process Text
-stop_uninformative <- strsplit("able absolutely access according account accountable across action actually affected agency agree agreement alive allegation allow allowed allowing almost alone along already also always ambassador amid among another answer anti anymore anyone anything area arent around arrived article asylum attempt attention away back based basic become believe best better black blame blocked born breaking bring brother call called calling came cant case caught cause centre change claim claiming clear clearly close come coming comment commited commiting completely concern concerned condemn condition confirmed  continue continues could country course cover created credible crisis currently daily day deal dear decade decision demand department despite didnt difference different dire doesnt done dont east eastern easy either effort else endf enough especially ethnic even ever every everyone everything evidence evil exactly expect extremely face facility facing fact failed fake false federal feel find first found four forget free fuck fucking full genuine getting given giving great ground group happy imagine including issue instead isnt give going good half hand happen happened happening hard head heading held high horn hour however huge idea image immediate immediately independent information inside internal internally interview investigate investigation issue join journalist keep kind know known lack land landing largest last latest leader least left let letting level lie like likely little live living load local long longer look looking lost made mail major majority make making many massive matter maybe mean medium member middle might migration mind month morning mostly move much must name near nearly need needed neighboring never news next nobody north northern nothing obviously office one ongoing operation others paid part party pas past people perhaps person place plan please point post press prevails prime probably problem process programme provide public push putting question quite rather reach read real realise reality really reason received recent record remains remember report reported reporting resident response responsible rest result right said satellite say saying second seek seeker seeking seem seems seen send sending sent series service several shame share shit show side simple simply since single site situation small someone something soon sorry sort south source speak special spread stand star start started statement street still stop stopped stopping story stupid sure surely system take taken taking talk talking tell term testimony thank thanks thats there theyre thing think though thought three time today told took torn towards town tried true truth trying turn tweet understand unless urgent urgently used using video vice view virus visit voice wait waiting want wanted watch water week welcome well west western withdraw within without whats whilst white whole wing wish wonder wont word world worse wrong would year yesterday young youre"," ")[[1]]
+stop_uninformative <- strsplit("able absolutely access according account accountable across action actually affected agency agree agreement alive allegation allow allowed allowing almost alone along already also always ambassador amid among another answer anti anymore anyone anything area arent around arrived article asylum attempt attention away back based basic become believe best better black blame blocked born breaking bring brother build call called calling came cant case caught cause centre change claim claiming clear clearly close come coming comment commited commiting completely concern concerned condemn condition confirmed  continue continues could country course cover created credible crisis currently daily day deal dear decade decision demand department despite didnt difference different dire doesnt done dont east eastern easy either effort else endf enough especially ethnic even ever every everyone everything evidence evil exactly expect extremely face facility facing fact failed fake false federal feel find first found four forget free fuck fucking full genuine getting given giving great ground group happy imagine including issue instead isnt give going good half hand happen happened happening hard head heading held high horn hour however huge idea image immediate immediately independent information inside internal internally interview investigate investigation issue join journalist keep kind know known lack land landing largest last latest leader least left let letting level lie like likely little live living load local long longer look looking lost made mail major majority make making many massive matter maybe mean medium member middle might migration mind month morning mostly move much must name national near nearly need needed neighboring never news next nobody north northern nothing obviously office official one ongoing operation others paid part party pas past people perhaps person place plan please point post press prevails prime probably problem process programme provide public push putting question quite rather reach read real realise reality really reason received recent record remains remember report reported reporting resident response responsible rest result right said satellite say saying second seek seeker seeking seem seems seen send sending sent series service several shame share shit show side simple simply since single site situation small someone something soon sorry sort south source speak special spread stand star start started statement street still stop stopped stopping story stupid sure surely system take taken taking talk talking tell term testimony thank thanks thats there theyre thing think though thought three time today told took torn towards town tried true truth trying turn tweet understand unless urgent urgently used using video vice view virus visit voice wait waiting want wanted watch water week welcome well west western withdraw within without whats whilst white whole wing wish wonder wont word world worse wrong would year yesterday young youre"," ")[[1]]
 
 stop_ne <- strsplit("abiy addis aegean afewerki afeworki afghan afghanistan africa african america amnesty ahmed american amhara andrew ankara antony arab asean asia assad aung bachelet balukhali bangladesh bangladeshi biden blinken boris borisjohnson borrell brexit brit britain british brussels bulgaria burma burmese calais canada channel china commission commissioner corona coronavirus council covid cox dover dublin edirne england english erdoan erdogan eritrea eritrean ethiopia ethiopian euro europe european evros farage filippo fontelles france french freya_cole garneau geneva german germany grandi greece greek guterres haavisto hamdayet harris hindu hitsats houthi houthis idlib idp india indian iran iraq isaias isayas isi israel italy jammu jazeera jerry johnson josep junta justin kachin kadra karen kayin kamala kent kenya kurd labour linda lindat_g lebanon lesbos lesvos libya london maikadra manipur marc merkel michelle mizoram moria muslim mutraw myanmar nation nations nationshumanrights nato nazi nigel november oromia oromo pakistan patel president priti putin reuters rohingya rohingyas russia russian samri secretary shimelba shire somalia spain state sudan sudanese syria syrian tegaru tigrai tigrayan tigrayans thai thailand tory tplf trudeau trump turk turkey turkish unhcr unicef union united unsc yemen youtube"," ")[[1]]
 
-stop_model_opt <- strsplit("allow blame center create desparate eastern enter immigration international fake fascist home island journalist leave life live love open opened opened photo political poor propaganda racist safe save stay tear western"," ")[[1]]
+stop_model_opt <- strsplit("accept allow blame border center closed create cross desparate eastern enter immigration international fake fascist home hundred illegal illegally island journalist leave legal legally life live love million open opened opened photo political poor propaganda racist safe save stay tear thousand western"," ")[[1]]
 
 stop_cust <- c(stop_uninformative,stop_ne,stop_model_opt)
 
@@ -129,7 +129,7 @@ processed_greece = textProcessor(df_greece$text_stm, metadata = df_greece,
                                  removepunctuation = FALSE,
                                  ucp = FALSE,
                                  stem = FALSE,
-                                 customstopwords = stop_cust)
+                                 customstopwords = stop_ne)
 
 # Prepare Docs
 ?plotRemoved
@@ -147,7 +147,7 @@ out_greece <- prepDocuments(processed_greece$documents,
 
 
 # --------------------------------------------------------
-# ------------------- Process channel data ----------------
+# ------------------- Process channel data ---------------
 # --------------------------------------------------------
 processed_channel = textProcessor(df_channel$text_stm, metadata = df_channel,
                                   lowercase = FALSE,
@@ -324,12 +324,22 @@ plot(storage_rohingya)
 # Build candidate models
 ?stm
 
+model_greece_4 <- stm(documents = out_greece$documents,
+                      vocab = out_greece$vocab,
+                      K = 4,
+                      prevalence =~ entity + s(day),
+                      data = out_greece$meta,
+                      init.type = "Spectral",
+                      max.em.its = 15,
+                      seed = 42)
+
 model_greece_5 <- stm(documents = out_greece$documents,
                       vocab = out_greece$vocab,
                       K = 5,
                       prevalence =~ entity + s(day),
                       data = out_greece$meta,
                       init.type = "Spectral",
+                      max.em.its = 15,
                       seed = 42)
 
 model_greece_6 <- stm(documents = out_greece$documents,
@@ -379,7 +389,7 @@ model_greece_40 <- stm(documents = out_greece$documents,
 
 # Choose the model to investiate
 
-model_greece <- model_greece_7
+model_greece <- model_greece_6
 
 # Plot the convergence
 plot(model_greece$convergence$bound,
