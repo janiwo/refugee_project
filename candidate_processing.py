@@ -218,7 +218,7 @@ def get_cand_type(cand_list, cand_heads, tweet_tags):
             cand_type = cand_types_dict[pre_cand_type] if pre_cand_type in cand_types_dict.keys() else 'misc'
             
             
-            cand_head_type = (tweet_candidates[np],rep_head,cand_type) # phrase_heads
+            cand_head_type = (tweet_candidates[np],rep_head,cand_type) #phrase_heads
 
             cand_types.append(cand_head_type)
         cand_and_type_list.append(cand_types)
