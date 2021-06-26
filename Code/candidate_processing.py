@@ -55,16 +55,6 @@ def get_coref_chain(tweet,client):
         all_chains.append(coref_group)
     return all_chains
 
-def prep_candlist_for_batching(cand_list):
-    #change noun_phrase_list format to be batching compatible
-    all_cands_list = cand_list.copy()
-    for tweet_id in range(len(cand_list)):
-        if len(cand_list[tweet_id]) == 0:
-            cand_list[tweet_id] = ['candidate_to_be_removed']
-     
-        all_cands_list[tweet_id] = '\n\n'.join(cand_list[tweet_id])
-    return all_cands_list
-
 
 
 def get_cand_heads(tagged_cands):
@@ -116,25 +106,6 @@ def get_synt_category(head):
                     else:
                         # if the synset is not similar assign the hypernym synset
                         synt_category = hyper.lemma_names()[0]
-                #
-                #
-                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MAKE MAX FUNCTION FOR FOLLOWING SECTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                #
-                """                if ss.wup_similarity(person_ss) >= 0.7:
-                    synt_category = 'PERSON'
-                    break
-                #elif ss.wup_similarity(group_ss) >= 0.7:
-                    #synt_category = 'facility'
-                    #break
-                elif ss.wup_similarity(place_ss) >= 0.7:
-                    synt_category = 'LOC'
-                    break
-                elif ss.wup_similarity(org_ss) >= 0.7:
-                    synt_category = 'ORG'
-                    break
-                else:
-                    # if the synset is not similar assign the hypernym synset
-                    synt_category = hyper.lemma_names()[0]"""
 
                 #force stop at level 5 of hypernym search
                 if counter == 5:
@@ -179,6 +150,7 @@ def get_cand_type(cand_list, cand_heads, tweet_tags):
         cand_head_type = tuple()
         for np in range(len(tweet_candidates)):
             cand_head_type = tuple() 
+            if len(tweet_candidates)
             rep_head = cand_heads[tweet_index][np][1][0]
             #phrase_heads = cand_heads[tweet_index][np][0]
 
