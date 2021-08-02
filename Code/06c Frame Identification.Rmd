@@ -19,10 +19,10 @@ library(ggplot2)
 
 #file_path = "/Users/Janiwo/Desktop/Clean"
 file_path = "C:/Users/jawo19ad/Dropbox (CBS)/Master thesis data/Event Dataframes/Clean"
-greece_path = paste(file_path,"/df_greece_clean.csv", sep = "")
-channel_path = paste(file_path,"/df_channel_clean.csv", sep = "")
-tigray_path = paste(file_path,"/df_tigray_clean.csv", sep = "")
-rohingya_path = paste(file_path,"/df_rohingya_clean.csv", sep = "")
+greece_path = paste(file_path,"/df_greece_fi.csv", sep = "")
+channel_path = paste(file_path,"/df_channel_fi.csv", sep = "")
+tigray_path = paste(file_path,"/df_tigray_fi.csv", sep = "")
+rohingya_path = paste(file_path,"/df_rohingya_fi.csv", sep = "")
 
 # --------------------------------------------------------
 # ------------------- Load greece data -------------------
@@ -30,17 +30,17 @@ rohingya_path = paste(file_path,"/df_rohingya_clean.csv", sep = "")
 df_greece_raw <- read.csv(file = greece_path,
                           stringsAsFactors = FALSE)
 
-df_greece_raw <- df_greece_raw %>%
-  mutate(entity = case_when(
-    refugee == "True" & migrant == "False" ~ "Refugee",
-    refugee == "True" & migrant == "True" ~ "Both",
-    refugee == "False" & migrant == "True" ~ "Migrant",
-    refugee == "False" & migrant == "False" ~ "None",
-  ))
+# df_greece_raw <- df_greece_raw %>%
+#   mutate(entity = case_when(
+#     refugee == "True" & migrant == "False" ~ "Refugee",
+#     refugee == "True" & migrant == "True" ~ "Both",
+#     refugee == "False" & migrant == "True" ~ "Migrant",
+#     refugee == "False" & migrant == "False" ~ "None",
+#   ))
 
 df_greece_raw$day <- cumsum(!duplicated(df_greece_raw$date))
 
-df_greece <- df_greece_raw %>% select(text_stm, text_coherent, day, entity)
+df_greece <- df_greece_raw %>% select(text_frame_identification, text_coherent, day)
 
 
 
@@ -50,17 +50,17 @@ df_greece <- df_greece_raw %>% select(text_stm, text_coherent, day, entity)
 df_channel_raw <- read.csv(file = channel_path,
                            stringsAsFactors = FALSE)
 
-df_channel_raw <- df_channel_raw %>%
-  mutate(entity = case_when(
-    refugee == "True" & migrant == "False" ~ "Refugee",
-    refugee == "True" & migrant == "True" ~ "Both",
-    refugee == "False" & migrant == "True" ~ "Migrant",
-    refugee == "False" & migrant == "False" ~ "None",
-  ))
+# df_channel_raw <- df_channel_raw %>%
+#   mutate(entity = case_when(
+#     refugee == "True" & migrant == "False" ~ "Refugee",
+#     refugee == "True" & migrant == "True" ~ "Both",
+#     refugee == "False" & migrant == "True" ~ "Migrant",
+#     refugee == "False" & migrant == "False" ~ "None",
+#   ))
 
 df_channel_raw$day <- cumsum(!duplicated(df_channel_raw$date))
 
-df_channel <- df_channel_raw %>% select(text_stm, text_coherent, day, entity)
+df_channel <- df_channel_raw %>% select(text_frame_identification, text_coherent, day)
 
 
 
@@ -70,17 +70,17 @@ df_channel <- df_channel_raw %>% select(text_stm, text_coherent, day, entity)
 df_tigray_raw <- read.csv(file = tigray_path,
                           stringsAsFactors = FALSE)
 
-df_tigray_raw <- df_tigray_raw %>%
-  mutate(entity = case_when(
-    refugee == "True" & migrant == "False" ~ "Refugee",
-    refugee == "True" & migrant == "True" ~ "Both",
-    refugee == "False" & migrant == "True" ~ "Migrant",
-    refugee == "False" & migrant == "False" ~ "None",
-  ))
+# df_tigray_raw <- df_tigray_raw %>%
+#   mutate(entity = case_when(
+#     refugee == "True" & migrant == "False" ~ "Refugee",
+#     refugee == "True" & migrant == "True" ~ "Both",
+#     refugee == "False" & migrant == "True" ~ "Migrant",
+#     refugee == "False" & migrant == "False" ~ "None",
+#   ))
 
 df_tigray_raw$day <- cumsum(!duplicated(df_tigray_raw$date))
 
-df_tigray <- df_tigray_raw %>% select(text_stm, text_coherent, day, entity)
+df_tigray <- df_tigray_raw %>% select(text_frame_identification, text_coherent, day)
 
 
 
@@ -90,17 +90,17 @@ df_tigray <- df_tigray_raw %>% select(text_stm, text_coherent, day, entity)
 df_rohingya_raw <- read.csv(file = rohingya_path,
                           stringsAsFactors = FALSE)
 
-df_rohingya_raw <- df_rohingya_raw %>%
-  mutate(entity = case_when(
-    refugee == "True" & migrant == "False" ~ "Refugee",
-    refugee == "True" & migrant == "True" ~ "Both",
-    refugee == "False" & migrant == "True" ~ "Migrant",
-    refugee == "False" & migrant == "False" ~ "None",
-  ))
+# df_rohingya_raw <- df_rohingya_raw %>%
+#   mutate(entity = case_when(
+#     refugee == "True" & migrant == "False" ~ "Refugee",
+#     refugee == "True" & migrant == "True" ~ "Both",
+#     refugee == "False" & migrant == "True" ~ "Migrant",
+#     refugee == "False" & migrant == "False" ~ "None",
+#   ))
 
 df_rohingya_raw$day <- cumsum(!duplicated(df_rohingya_raw$date))
 
-df_rohingya <- df_rohingya_raw %>% select(text_stm, text_coherent, day, entity)
+df_rohingya <- df_rohingya_raw %>% select(text_frame_identification, text_coherent, day)
 
 ```
 
@@ -122,14 +122,14 @@ stop_cust <- c(stop_uninformative,stop_ne,stop_model_opt)
 # --------------------------------------------------------
 ?textProcessor
 
-processed_greece = textProcessor(df_greece$text_stm, metadata = df_greece,
+processed_greece = textProcessor(df_greece$text_frame_identification, metadata = df_greece,
                                  lowercase = FALSE,
                                  removestopwords = FALSE,
                                  removenumbers = FALSE,
                                  removepunctuation = FALSE,
                                  ucp = FALSE,
                                  stem = FALSE,
-                                 customstopwords = stop_ne)
+                                 customstopwords = FALSE)
 
 # Prepare Docs
 ?plotRemoved
@@ -141,22 +141,20 @@ plotRemoved(processed_greece$documents,
 ?prepDocuments
 out_greece <- prepDocuments(processed_greece$documents,
                             processed_greece$vocab,
-                            processed_greece$meta,
-                            lower.thresh = 0.005*rows,
-                            upper.thresh = 0.5*rows)
+                            processed_greece$meta)
 
 
 # --------------------------------------------------------
 # ------------------- Process channel data ---------------
 # --------------------------------------------------------
-processed_channel = textProcessor(df_channel$text_stm, metadata = df_channel,
+processed_channel = textProcessor(df_channel$text_frame_identification, metadata = df_channel,
                                   lowercase = FALSE,
                                   removestopwords = FALSE,
                                   removenumbers = FALSE,
                                   removepunctuation = FALSE,
                                   ucp = FALSE,
                                   stem = FALSE,
-                                  customstopwords = stop_cust)
+                                  customstopwords = FALSE)
 
 # Prepare Docs
 rows <- nrow(df_channel)
@@ -166,23 +164,21 @@ plotRemoved(processed_channel$documents,
 
 out_channel <- prepDocuments(processed_channel$documents,
                              processed_channel$vocab,
-                             processed_channel$meta,
-                             lower.thresh = 0.005*rows,
-                             upper.thresh = 0.5*rows)
+                             processed_channel$meta)
 
 
 # --------------------------------------------------------
 # ------------------- Process tigray data ----------------
 # --------------------------------------------------------
 ?textProcessor
-processed_tigray = textProcessor(df_tigray$text_stm, metadata = df_tigray,
+processed_tigray = textProcessor(df_tigray$text_frame_identification, metadata = df_tigray,
                                  lowercase = FALSE,
                                  removestopwords = FALSE,
                                  removenumbers = FALSE,
                                  removepunctuation = FALSE,
                                  ucp = FALSE,
                                  stem = FALSE,
-                                 customstopwords = stop_cust)
+                                 customstopwords = FALSE)
 
 # Prepare Docs
 ?plotRemoved
@@ -194,23 +190,21 @@ plotRemoved(processed_tigray$documents,
 ?prepDocuments
 out_tigray <- prepDocuments(processed_tigray$documents,
                             processed_tigray$vocab,
-                            processed_tigray$meta,
-                            lower.thresh = 0.005*rows,
-                            upper.thresh = 0.5*rows)
+                            processed_tigray$meta)
 
 
 # --------------------------------------------------------
 # ------------------- Process rohingya data --------------
 # --------------------------------------------------------
 ?textProcessor
-processed_rohingya = textProcessor(df_rohingya$text_stm, metadata = df_rohingya,
+processed_rohingya = textProcessor(df_rohingya$text_frame_identification, metadata = df_rohingya,
                                   lowercase = FALSE,
                                   removestopwords = FALSE,
                                   removenumbers = FALSE,
                                   removepunctuation = FALSE,
                                   ucp = FALSE,
                                   stem = FALSE,
-                                  customstopwords = stop_cust)
+                                  customstopwords = FALSE)
 
 # Prepare Docs
 ?plotRemoved
@@ -222,9 +216,34 @@ plotRemoved(processed_rohingya$documents,
 ?prepDocuments
 out_rohingya <- prepDocuments(processed_rohingya$documents,
                               processed_rohingya$vocab,
-                              processed_rohingya$meta,
-                              lower.thresh = 0.005*rows,
-                              upper.thresh = 0.5*rows)
+                              processed_rohingya$meta)
+
+
+
+
+##### ARCHIEVE
+# processed_rohingya = textProcessor(df_rohingya$text_stm, metadata = df_rohingya,
+#                                   lowercase = FALSE,
+#                                   removestopwords = FALSE,
+#                                   removenumbers = FALSE,
+#                                   removepunctuation = FALSE,
+#                                   ucp = FALSE,
+#                                   stem = FALSE,
+#                                   customstopwords = stop_cust)
+# 
+# # Prepare Docs
+# ?plotRemoved
+# rows <- nrow(df_rohingya)
+# plotRemoved(processed_rohingya$documents,
+#             lower.thresh = seq(as.integer(0.001*rows),
+#                                as.integer(0.05*rows)))
+# 
+# ?prepDocuments
+# out_rohingya <- prepDocuments(processed_rohingya$documents,
+#                               processed_rohingya$vocab,
+#                               processed_rohingya$meta,
+#                               lower.thresh = 0.005*rows,
+#                               upper.thresh = 0.5*rows)
 ```
 
 # Find optimal number of topics
@@ -239,12 +258,13 @@ out_rohingya <- prepDocuments(processed_rohingya$documents,
 # ngroups argument to speed up computation (at the cost of increased memory)
 storage_greece <- searchK(documents = out_greece$documents,
                           vocab = out_greece$vocab,
-                          K = c(3,4,5,6,8,10,12,15,20,25,30,40,50,75,100),
-                          prevalence =~ entity + s(day),
+                          K = c(4,5,6,7,8,9,10,11,12),
+                          #K = c(4,6,8,10,12,15,20),
+                          #prevalence =~ entity + s(day),
                           data = out_greece$meta,
-                          max.em.its = 25,
+                          max.em.its = 15,
                           seed = 42)
-plot(storage_greece) # -> 7/8 seems to be good
+plot(storage_greece) # -> 6/8 seems to be good
 #exclusivity(model_fit, M = 10)
 
 
@@ -254,12 +274,13 @@ plot(storage_greece) # -> 7/8 seems to be good
 # Find best K (use this code to train stm for different K's)
 storage_channel <- searchK(documents = out_channel$documents,
                           vocab = out_channel$vocab,
-                          K = c(3,4,5,6,8,10,12,15,20,25,30,40,50,75,100),
-                          prevalence =~ entity + s(day),
+                          K = c(4,5,6,7,8,9,10,11,12),
+                          #K = c(4,6,8,10,12,15,20),
+                          #prevalence =~ entity + s(day),
                           data = out_channel$meta,
-                          max.em.its = 25,
+                          max.em.its = 15,
                           seed = 42)
-plot(storage_channel) # -> 7/8 seems to be good
+plot(storage_channel) # -> 5 probably
 #exclusivity(model_fit, M = 10)
 
 
@@ -268,12 +289,12 @@ plot(storage_channel) # -> 7/8 seems to be good
 # --------------------------------------------------------
 storage_tigray <- searchK(documents = out_tigray$documents,
                           vocab = out_tigray$vocab,
-                          K = c(3,4,5,6,8,10,12,15,20,25,30,40,50,75,100),
-                          prevalence =~ entity + s(day),
+                          K = c(4,5,6,7,8,9,10,11,12),
+                          #prevalence =~ entity + s(day),
                           data = out_tigray$meta,
-                          max.em.its = 25,
+                          max.em.its = 15,
                           seed = 42)
-plot(storage_tigray)
+plot(storage_tigray) #6 looks best, possibly 7
 
 
 # --------------------------------------------------------
@@ -281,12 +302,12 @@ plot(storage_tigray)
 # --------------------------------------------------------
 storage_rohingya <- searchK(documents = out_rohingya$documents,
                             vocab = out_rohingya$vocab,
-                            K = c(3,4,5,6,8,10,12,15,20,25,30,40,50,75,100),
-                            prevalence =~ entity + s(day),
+                            K = c(4,5,6,7,8,9,10,11,12),
+                            #prevalence =~ entity + s(day),
                             data = out_rohingya$meta,
                             max.em.its = 25,
                             seed = 42)
-plot(storage_rohingya)
+plot(storage_rohingya) #6 looks best, could also be 7
 
 
 # exclusivity -> 
@@ -319,7 +340,7 @@ plot(storage_rohingya)
 # Model Creation
 ```{r}
 # --------------------------------------------------------
-# ------------------- Build model for greece -------------
+# ------------------- Build model for greece ------------- 6,7,8
 # --------------------------------------------------------
 # Build candidate models
 ?stm
@@ -327,7 +348,7 @@ plot(storage_rohingya)
 model_greece_4 <- stm(documents = out_greece$documents,
                       vocab = out_greece$vocab,
                       K = 4,
-                      prevalence =~ entity + s(day),
+                      #prevalence =~ entity + s(day),
                       data = out_greece$meta,
                       init.type = "Spectral",
                       max.em.its = 15,
@@ -336,7 +357,7 @@ model_greece_4 <- stm(documents = out_greece$documents,
 model_greece_5 <- stm(documents = out_greece$documents,
                       vocab = out_greece$vocab,
                       K = 5,
-                      prevalence =~ entity + s(day),
+                      #prevalence =~ entity + s(day),
                       data = out_greece$meta,
                       init.type = "Spectral",
                       max.em.its = 15,
@@ -345,7 +366,7 @@ model_greece_5 <- stm(documents = out_greece$documents,
 model_greece_6 <- stm(documents = out_greece$documents,
                       vocab = out_greece$vocab,
                       K = 6,
-                      prevalence =~ entity + s(day),
+                      #prevalence =~ entity + s(day),
                       data = out_greece$meta,
                       init.type = "Spectral",
                       max.em.its = 15,
@@ -354,7 +375,7 @@ model_greece_6 <- stm(documents = out_greece$documents,
 model_greece_7 <- stm(documents = out_greece$documents,
                       vocab = out_greece$vocab,
                       K = 7,
-                      prevalence =~ entity + s(day),
+                      #prevalence =~ entity + s(day),
                       data = out_greece$meta,
                       init.type = "Spectral",
                       max.em.its = 15,
@@ -363,7 +384,7 @@ model_greece_7 <- stm(documents = out_greece$documents,
 model_greece_8 <- stm(documents = out_greece$documents,
                       vocab = out_greece$vocab,
                       K = 8,
-                      prevalence =~ entity + s(day),
+                      #prevalence =~ entity + s(day),
                       data = out_greece$meta,
                       init.type = "Spectral",
                       max.em.its = 15,
@@ -387,15 +408,15 @@ model_greece_40 <- stm(documents = out_greece$documents,
 #                     seed = 42)
 
 
-# Choose the model to investiate
+1) immigration
+2) hosting
+3) misc
+4) securitisation
+5) humanitarian
+6) vulnerability
+7) invasion
 
-model_greece <- model_greece_6
 
-# Plot the convergence
-plot(model_greece$convergence$bound,
-     type = "l",
-     ylab = "Approximate Convergence",
-     main = "Convergence")
 
 
 # prep2_greece <- estimateEffect(c(7) ~ entity * s(day), model_greece, metadata = out_greece$meta, uncertainty = "None")
@@ -406,9 +427,18 @@ plot(model_greece$convergence$bound,
 
 # Model Exploration
 ```{r}
+# Choose the model to investiate
+model_greece <- model_greece_7
+
+# Plot the convergence
+plot(model_greece$convergence$bound,
+     type = "l",
+     ylab = "Approximate Convergence",
+     main = "Convergence")
+
 # Label Topics
 ?labelTopics
-labelTopics(model = model_greece,
+x = labelTopics(model = model_greece,
             n = 10)
 
 # Plot frequency of topics
@@ -488,50 +518,64 @@ axis(1,at = as.numeric(weekseq) - min(as.numeric(weekseq)), labels = weeknames)
 # Model Creation
 ```{r}
 # --------------------------------------------------------
-# ------------------- Build model for channel -------------
+# ------------------- Build model for channel ------------- 5,6,7,8
 # --------------------------------------------------------
 # Build candidate models
+model_channel_5 <- stm(documents = out_channel$documents,
+                       vocab = out_channel$vocab,
+                       K = 5,
+                       #prevalence =~ entity + s(day),
+                       data = out_channel$meta,
+                       init.type = "Spectral",
+                       max.em.its = 15,
+                       seed = 42)
+
 model_channel_6 <- stm(documents = out_channel$documents,
                        vocab = out_channel$vocab,
                        K = 6,
-                       prevalence =~ entity + s(day),
+                       #prevalence =~ entity + s(day),
                        data = out_channel$meta,
                        init.type = "Spectral",
+                       max.em.its = 15,
                        seed = 42)
 
 model_channel_7 <- stm(documents = out_channel$documents,
                        vocab = out_channel$vocab,
                        K = 7,
-                       prevalence =~ entity + s(day),
+                       #prevalence =~ entity + s(day),
                        data = out_channel$meta,
                        init.type = "Spectral",
+                       max.em.its = 15,
                        seed = 42)
 
 model_channel_8 <- stm(documents = out_channel$documents,
                        vocab = out_channel$vocab,
                        K = 8,
-                       prevalence =~ entity + s(day),
+                       #prevalence =~ entity + s(day),
                        data = out_channel$meta,
                        init.type = "Spectral",
+                       max.em.its = 15,
                        seed = 42)
 
 
+
+```
+
+# Model Exploration
+```{r}
 # Choose the model to investiate
 
-model_channel <- model_channel_6
+model_channel <- model_channel_5
 
 # Plot the convergence
 plot(model_channel$convergence$bound,
      type = "l",
      ylab = "Approximate Convergence",
      main = "Convergence")
-```
 
-# Model Exploration
-```{r}
 # Label Topics
 ?labelTopics
-labelTopics(model = model_channel,
+x = labelTopics(model = model_channel,
             n = 10)
 
 # Plot frequency of topics
@@ -613,35 +657,47 @@ axis(1,at = as.numeric(weekseq) - min(as.numeric(weekseq)), labels = weeknames)
 # Model Creation
 ```{r}
 # --------------------------------------------------------
-# ------------------- Build model for greece -------------
+# ------------------- Build model for tigray -------------
 # --------------------------------------------------------
 # Build candidate models
 ?stm
 model_tigray_6 <- stm(documents = out_tigray$documents,
                       vocab = out_tigray$vocab,
                       K = 6,
-                      prevalence =~ entity + s(day),
+                      #prevalence =~ entity + s(day),
                       data = out_tigray$meta,
                       init.type = "Spectral",
+                      max.em.its = 15,
                       seed = 42)
 
 model_tigray_7 <- stm(documents = out_tigray$documents,
                       vocab = out_tigray$vocab,
                       K = 7,
-                      prevalence =~ entity + s(day),
+                      #prevalence =~ entity + s(day),
                       data = out_tigray$meta,
                       init.type = "Spectral",
+                      max.em.its = 15,
                       seed = 42)
 
 model_tigray_8 <- stm(documents = out_tigray$documents,
                       vocab = out_tigray$vocab,
                       K = 8,
-                      prevalence =~ entity + s(day),
+                      #prevalence =~ entity + s(day),
                       data = out_tigray$meta,
                       init.type = "Spectral",
+                      max.em.its = 15,
                       seed = 42)
 
 
+
+# prep2_greece <- estimateEffect(c(7) ~ entity * s(day), model_greece, metadata = out_greece$meta, uncertainty = "None")
+# plot(prep2_greece, covariate = "day", model = model_greece, method = "continuous", xlab = "Days", moderator = "entity", moderator.value = "Refugee", linecol = "red", ylim = c(0,0.25), printlegend = FALSE)
+# plot(prep2_greece, covariate = "day", model = model_greece, method = "continuous", xlab = "Days", moderator = "entity", moderator.value = "Migrant", linecol = "blue",add = TRUE, printlegend = FALSE)
+# legend(0,0.2, c("Refugee","Migrant"), lwd = 2, col = c("red","blue"))
+```
+
+# Model Exploration
+```{r}
 # Choose the model to investiate
 
 model_tigray <- model_tigray_6
@@ -653,17 +709,9 @@ plot(model_tigray$convergence$bound,
      main = "Convergence")
 
 
-# prep2_greece <- estimateEffect(c(7) ~ entity * s(day), model_greece, metadata = out_greece$meta, uncertainty = "None")
-# plot(prep2_greece, covariate = "day", model = model_greece, method = "continuous", xlab = "Days", moderator = "entity", moderator.value = "Refugee", linecol = "red", ylim = c(0,0.25), printlegend = FALSE)
-# plot(prep2_greece, covariate = "day", model = model_greece, method = "continuous", xlab = "Days", moderator = "entity", moderator.value = "Migrant", linecol = "blue",add = TRUE, printlegend = FALSE)
-# legend(0,0.2, c("Refugee","Migrant"), lwd = 2, col = c("red","blue"))
-```
-
-# Model Exploration
-```{r}
 # Label Topics
 ?labelTopics
-labelTopics(model = model_tigray,
+x = labelTopics(model = model_tigray,
             n = 10)
 
 # Plot frequency of topics
@@ -746,32 +794,43 @@ axis(1,at = as.numeric(weekseq) - min(as.numeric(weekseq)), labels = weeknames)
 # ------------------- Build model for greece -------------
 # --------------------------------------------------------
 # Build candidate models
-?stm
 model_rohingya_6 <- stm(documents = out_rohingya$documents,
                       vocab = out_rohingya$vocab,
                       K = 6,
-                      prevalence =~ entity + s(day),
+                      #prevalence =~ entity + s(day),
                       data = out_rohingya$meta,
                       init.type = "Spectral",
+                      max.em.its = 15,
+                      seed = 42)
+
+model_rohingya_7 <- stm(documents = out_rohingya$documents,
+                      vocab = out_rohingya$vocab,
+                      K = 7,
+                      #prevalence =~ entity + s(day),
+                      data = out_rohingya$meta,
+                      init.type = "Spectral",
+                      max.em.its = 15,
                       seed = 42)
 
 model_rohingya_8 <- stm(documents = out_rohingya$documents,
                       vocab = out_rohingya$vocab,
                       K = 8,
-                      prevalence =~ entity + s(day),
+                      #prevalence =~ entity + s(day),
                       data = out_rohingya$meta,
                       init.type = "Spectral",
-                      seed = 42)
-
-model_rohingya_9 <- stm(documents = out_rohingya$documents,
-                      vocab = out_rohingya$vocab,
-                      K = 9,
-                      prevalence =~ entity + s(day),
-                      data = out_rohingya$meta,
-                      init.type = "Spectral",
+                      max.em.its = 15,
                       seed = 42)
 
 
+
+# prep2_greece <- estimateEffect(c(7) ~ entity * s(day), model_greece, metadata = out_greece$meta, uncertainty = "None")
+# plot(prep2_greece, covariate = "day", model = model_greece, method = "continuous", xlab = "Days", moderator = "entity", moderator.value = "Refugee", linecol = "red", ylim = c(0,0.25), printlegend = FALSE)
+# plot(prep2_greece, covariate = "day", model = model_greece, method = "continuous", xlab = "Days", moderator = "entity", moderator.value = "Migrant", linecol = "blue",add = TRUE, printlegend = FALSE)
+# legend(0,0.2, c("Refugee","Migrant"), lwd = 2, col = c("red","blue"))
+```
+
+# Model Exploration
+```{r}
 # Choose the model to investiate
 
 model_rohingya <- model_rohingya_6
@@ -783,18 +842,10 @@ plot(model_rohingya$convergence$bound,
      main = "Convergence")
 
 
-# prep2_greece <- estimateEffect(c(7) ~ entity * s(day), model_greece, metadata = out_greece$meta, uncertainty = "None")
-# plot(prep2_greece, covariate = "day", model = model_greece, method = "continuous", xlab = "Days", moderator = "entity", moderator.value = "Refugee", linecol = "red", ylim = c(0,0.25), printlegend = FALSE)
-# plot(prep2_greece, covariate = "day", model = model_greece, method = "continuous", xlab = "Days", moderator = "entity", moderator.value = "Migrant", linecol = "blue",add = TRUE, printlegend = FALSE)
-# legend(0,0.2, c("Refugee","Migrant"), lwd = 2, col = c("red","blue"))
-```
-
-# Model Exploration
-```{r}
 # Label Topics
 ?labelTopics
-labelTopics(model = model_rohingya,
-            n = 6)
+x = labelTopics(model = model_rohingya,
+            n = 10)
 
 # Plot frequency of topics
 plot(model_rohingya, type="summary")
