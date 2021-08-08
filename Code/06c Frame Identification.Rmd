@@ -428,7 +428,7 @@ model_greece_40 <- stm(documents = out_greece$documents,
 # Model Exploration
 ```{r}
 # Choose the model to investiate
-model_greece <- model_greece_7
+model_greece <- model_greece_8
 
 # Plot the convergence
 plot(model_greece$convergence$bound,
