@@ -12,7 +12,7 @@ As the refugees get closer to receiving countries, frames increasingly revolve a
 
 **Keywords: Networked Framing, Network Analysis, Natural Language Processing, Refugee Crisis, Social Data Science**
 
-**Process:**
+**Process:** \
 In the *Code* folder, jupyter notebooks describe the project from the data extraction until the results.
 The notebooks are organized based on 6 project phases:
  1. Twitter Data Fetch
@@ -25,9 +25,9 @@ The notebooks are organized based on 6 project phases:
  6. Frame attribution
 
 *Example of Taliban takeover of Kabul* \
-**The result:**
-![Frames in the Taliban takeover Twitter debate](afghanistan_heatmap.png "Frames in the Taliban takeover Twitter debate")
-**Findings:**
+**The result:** \
+![Frames in the Taliban takeover Twitter debate](afghanistan_heatmap.png "Frames in the Taliban takeover Twitter debate") \
+**Findings:** \
  - Strong humanitarian and political frames
  - Refugees in humanitarian vs. Migrants in political
  - Different roles of countries – EU security, UK political, US humanitarian
