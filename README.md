@@ -1,7 +1,7 @@
 # refugee_project
 This repository is used to manage data and code for our master thesis project. It includes our thesis defense presentation.
 
-# Abstract
+## Abstract
 In a changing media environment that is now largely considered to be hybrid, social media is becoming an increasingly important tool for the creation and dissemination of news stories. This creates a new form of framing ­ called networked framing ­ where users can partake in the creation of narratives regarding different subjects. 
 The specific subject on which this study is focused are refugees who, being a specifically vulnerable group, are particularly susceptible to how they are framed as it affects the manner in which they are treated in the receiving country. 
 Taking an interpretivist perspective, this study analysis the central refugee­related events extracted from a sample of 12,758,376 tweets fetched in the time period between January 2020 and April 2021.
@@ -21,10 +21,10 @@ The notebooks are organized based on 6 project phases:
  4. Tweets Preprocessing
  5. a. Entity Identification \
  	b. Frame Identification \
- 	c. Networks (our benchmark) \
+ 	c. Networks (our benchmark) 
  6. Frame attribution
 
-*Example of Taliban takeover of Kabul*
+*Example of Taliban takeover of Kabul* \
 **The result:**
 ![Frames in the Taliban takeover Twitter debate](afghanistan_heatmap.png "Frames in the Taliban takeover Twitter debate")
 **Findings:**
