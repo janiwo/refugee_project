@@ -1,5 +1,5 @@
 # refugee_project
-This repository is used to manage data and code for our master thesis project
+This repository is used to manage data and code for our master thesis project. It includes our thesis defense presentation.
 
 # Abstract
 In a changing media environment that is now largely considered to be hybrid, social media is becoming an increasingly important tool for the creation and dissemination of news stories. This creates a new form of framing ­ called networked framing ­ where users can partake in the creation of narratives regarding different subjects. 
@@ -13,19 +13,19 @@ As the refugees get closer to receiving countries, frames increasingly revolve a
 **Keywords: Networked Framing, Network Analysis, Natural Language Processing, Refugee Crisis, Social Data Science**
 
 **Process:**
-In the **Code** folder, jupyter notebooks describe the project from the data extraction until the results.
+In the *Code* folder, jupyter notebooks describe the project from the data extraction until the results.
 The notebooks are organized based on 6 project phases:
  1. Twitter Data Fetch
  2. File Consolidation
  3. Event Selection
  4. Tweets Preprocessing
- 5. a. Entity Identification
- 	b. Frame Identification
- 	c. Networks (our benchmark)
+ 5. a. Entity Identification \
+ 	b. Frame Identification \
+ 	c. Networks (our benchmark) \
  6. Frame attribution
 
-The result:
 *Example of Taliban takeover of Kabul*
+**The result:**
 ![Frames in the Taliban takeover Twitter debate](afghanistan_heatmap.png "Frames in the Taliban takeover Twitter debate")
 **Findings:**
  - Strong humanitarian and political frames
